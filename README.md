@@ -48,7 +48,7 @@ To get a local copy up and running, follow these steps:
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/dishdabble.git
+   git clone https://github.com/SIHLE-MTSHALI/dishdabble.git
    cd dishdabble
    ```
 
@@ -74,6 +74,8 @@ To get a local copy up and running, follow these steps:
    ```
    REACT_APP_API_URL=http://localhost:5000
    ```
+
+   Note: The `.gitignore` file is set up to prevent these `.env` files from being committed to the repository, ensuring that your sensitive information remains private.
 
 4. Start the application:
    ```
@@ -133,3 +135,15 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License.
+
+## Note on .gitignore
+
+The project includes a `.gitignore` file to prevent sensitive information and unnecessary files from being committed to the repository. This includes:
+
+- Node modules
+- Environment variable files (.env)
+- Build outputs
+- Log files
+- Editor-specific files
+
+Make sure to keep your sensitive information (like API keys and database credentials) in the `.env` files, which are ignored by git.
