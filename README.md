@@ -28,7 +28,7 @@ DishDabble is a community-driven recipe sharing platform where users can submit 
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/dishdabble.git
+   git clone https://github.com/SIHLE-MTSHALI/dishdabble.git
    cd dishdabble
    ```
 
