@@ -6,7 +6,8 @@ import {
   ADD_RECIPE,
   UPDATE_RECIPE,
   DELETE_RECIPE,
-  RECIPE_ERROR
+  RECIPE_ERROR,
+  SEARCH_RECIPES
 } from './types';
 
 // Get all recipes
@@ -46,13 +47,7 @@ export const getRecipe = id => async dispatch => {
 // Add new recipe
 export const addRecipe = formData => async dispatch => {
   try {
-    const config = {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    };
-
-    const res = await axios.post('/api/recipes', formData, config);
+    const res = await axios.post('/api/recipes', formData);
 
     dispatch({
       type: ADD_RECIPE,
@@ -71,13 +66,7 @@ export const addRecipe = formData => async dispatch => {
 // Update recipe
 export const updateRecipe = (id, formData) => async dispatch => {
   try {
-    const config = {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    };
-
-    const res = await axios.put(`/api/recipes/${id}`, formData, config);
+    const res = await axios.put(`/api/recipes/${id}`, formData);
 
     dispatch({
       type: UPDATE_RECIPE,
@@ -104,6 +93,40 @@ export const deleteRecipe = id => async dispatch => {
     });
 
     dispatch(setAlert('Recipe Removed', 'success'));
+  } catch (err) {
+    dispatch({
+      type: RECIPE_ERROR,
+      payload: { msg: err.response.statusText, status: err.response.status }
+    });
+  }
+};
+
+// Search recipes
+export const searchRecipes = searchTerm => async dispatch => {
+  try {
+    const res = await axios.get(`/api/recipes/search?term=${searchTerm}`);
+
+    dispatch({
+      type: SEARCH_RECIPES,
+      payload: res.data
+    });
+  } catch (err) {
+    dispatch({
+      type: RECIPE_ERROR,
+      payload: { msg: err.response.statusText, status: err.response.status }
+    });
+  }
+};
+
+// Get user recipes
+export const getUserRecipes = userId => async dispatch => {
+  try {
+    const res = await axios.get(`/api/recipes/user/${userId}`);
+
+    dispatch({
+      type: GET_RECIPES,
+      payload: res.data
+    });
   } catch (err) {
     dispatch({
       type: RECIPE_ERROR,
