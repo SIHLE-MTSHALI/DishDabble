@@ -14,6 +14,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/users', require('./routes/api/users'));
+app.use('/api/recipes', require('./routes/api/recipes'));
 
 const PORT = process.env.PORT || 5000;
 
