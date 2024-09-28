@@ -6,6 +6,7 @@ import theme from './styles/theme';
 
 // Components
 import Navigation from './components/layout/Navigation';
+import Footer from './components/layout/Footer';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import Register from './components/auth/Register';
@@ -13,6 +14,8 @@ import Login from './components/auth/Login';
 import RecipeList from './components/recipes/RecipeList';
 import RecipeDetail from './components/recipes/RecipeDetail';
 import RecipeForm from './components/recipes/RecipeForm';
+import ProfilePage from './pages/ProfilePage';
+import PrivateRoute from './components/routing/PrivateRoute';
 
 function App() {
   return (
@@ -27,9 +30,13 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/recipes" element={<RecipeList />} />
           <Route path="/recipes/:id" element={<RecipeDetail />} />
-          <Route path="/add-recipe" element={<RecipeForm />} />
-          <Route path="/edit-recipe/:id" element={<RecipeForm />} />
+          <Route element={<PrivateRoute />}>
+            <Route path="/add-recipe" element={<RecipeForm />} />
+            <Route path="/edit-recipe/:id" element={<RecipeForm />} />
+            <Route path="/profile" element={<ProfilePage />} />
+          </Route>
         </Routes>
+        <Footer />
       </Router>
     </ThemeProvider>
   );
