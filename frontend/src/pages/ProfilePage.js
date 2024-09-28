@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Typography, Container, Grid, Paper, Avatar, Button } from '@mui/material';
+import { Typography, Container, Grid, Paper, Avatar, Button, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import RecipeList from '../components/recipes/RecipeList';
 import { getUserRecipes } from '../actions/recipe';
+import Spinner from '../components/layout/Spinner';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -11,8 +12,8 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 }));
 
 const ProfilePage = () => {
-  const { user } = useSelector(state => state.auth);
-  const { recipes } = useSelector(state => state.recipe);
+  const { user, loading: authLoading } = useSelector(state => state.auth);
+  const { recipes, loading: recipeLoading } = useSelector(state => state.recipe);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -21,7 +22,17 @@ const ProfilePage = () => {
     }
   }, [dispatch, user]);
 
-  if (!user) return null;
+  if (authLoading || recipeLoading) {
+    return <Spinner />;
+  }
+
+  if (!user) {
+    return (
+      <Container>
+        <Typography>Please log in to view your profile.</Typography>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg">
@@ -48,10 +59,16 @@ const ProfilePage = () => {
         </Grid>
       </StyledPaper>
 
-      <Typography variant="h5" gutterBottom>
-        My Recipes
-      </Typography>
-      <RecipeList recipes={recipes} />
+      <Box mb={3}>
+        <Typography variant="h5" gutterBottom>
+          My Recipes
+        </Typography>
+        {recipes.length === 0 ? (
+          <Typography>You haven't created any recipes yet.</Typography>
+        ) : (
+          <RecipeList recipes={recipes} />
+        )}
+      </Box>
     </Container>
   );
 };

@@ -4,7 +4,8 @@ import {
   ADD_RECIPE,
   UPDATE_RECIPE,
   DELETE_RECIPE,
-  RECIPE_ERROR
+  RECIPE_ERROR,
+  SEARCH_RECIPES
 } from '../actions/types';
 
 const initialState = {
@@ -19,6 +20,7 @@ export default function(state = initialState, action) {
 
   switch (type) {
     case GET_RECIPES:
+    case SEARCH_RECIPES:
       return {
         ...state,
         recipes: payload,
@@ -42,6 +44,7 @@ export default function(state = initialState, action) {
         recipes: state.recipes.map(recipe =>
           recipe._id === payload._id ? payload : recipe
         ),
+        recipe: payload,
         loading: false
       };
     case DELETE_RECIPE:

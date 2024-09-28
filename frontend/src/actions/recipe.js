@@ -10,10 +10,12 @@ import {
   SEARCH_RECIPES
 } from './types';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 // Get all recipes
 export const getRecipes = () => async dispatch => {
   try {
-    const res = await axios.get('/api/recipes');
+    const res = await axios.get(`${API_URL}/api/recipes`);
 
     dispatch({
       type: GET_RECIPES,
@@ -30,7 +32,7 @@ export const getRecipes = () => async dispatch => {
 // Get recipe by ID
 export const getRecipe = id => async dispatch => {
   try {
-    const res = await axios.get(`/api/recipes/${id}`);
+    const res = await axios.get(`${API_URL}/api/recipes/${id}`);
 
     dispatch({
       type: GET_RECIPE,
@@ -46,8 +48,14 @@ export const getRecipe = id => async dispatch => {
 
 // Add new recipe
 export const addRecipe = formData => async dispatch => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
   try {
-    const res = await axios.post('/api/recipes', formData);
+    const res = await axios.post(`${API_URL}/api/recipes`, formData, config);
 
     dispatch({
       type: ADD_RECIPE,
@@ -65,8 +73,14 @@ export const addRecipe = formData => async dispatch => {
 
 // Update recipe
 export const updateRecipe = (id, formData) => async dispatch => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
   try {
-    const res = await axios.put(`/api/recipes/${id}`, formData);
+    const res = await axios.put(`${API_URL}/api/recipes/${id}`, formData, config);
 
     dispatch({
       type: UPDATE_RECIPE,
@@ -85,7 +99,7 @@ export const updateRecipe = (id, formData) => async dispatch => {
 // Delete recipe
 export const deleteRecipe = id => async dispatch => {
   try {
-    await axios.delete(`/api/recipes/${id}`);
+    await axios.delete(`${API_URL}/api/recipes/${id}`);
 
     dispatch({
       type: DELETE_RECIPE,
@@ -104,7 +118,7 @@ export const deleteRecipe = id => async dispatch => {
 // Search recipes
 export const searchRecipes = searchTerm => async dispatch => {
   try {
-    const res = await axios.get(`/api/recipes/search?term=${searchTerm}`);
+    const res = await axios.get(`${API_URL}/api/recipes/search?term=${searchTerm}`);
 
     dispatch({
       type: SEARCH_RECIPES,
@@ -121,7 +135,7 @@ export const searchRecipes = searchTerm => async dispatch => {
 // Get user recipes
 export const getUserRecipes = userId => async dispatch => {
   try {
-    const res = await axios.get(`/api/recipes/user/${userId}`);
+    const res = await axios.get(`${API_URL}/api/recipes/user/${userId}`);
 
     dispatch({
       type: GET_RECIPES,

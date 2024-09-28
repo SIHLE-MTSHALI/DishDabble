@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { useDispatch } from 'react-redux';
 import theme from './styles/theme';
+import { loadUser } from './actions/auth';
+import setAuthToken from './utils/setAuthToken';
 
 // Components
 import Navigation from './components/layout/Navigation';
@@ -18,7 +21,17 @@ import RecipeForm from './components/recipes/RecipeForm';
 import ProfilePage from './pages/ProfilePage';
 import PrivateRoute from './components/routing/PrivateRoute';
 
+if (localStorage.token) {
+  setAuthToken(localStorage.token);
+}
+
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(loadUser());
+  }, [dispatch]);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

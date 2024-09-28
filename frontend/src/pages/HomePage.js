@@ -1,6 +1,7 @@
 import React from 'react';
 import { Typography, Container, Grid, Card, CardContent, CardMedia } from '@mui/material';
 import RecipeList from '../components/recipes/RecipeList';
+import RecipeSearch from '../components/recipes/RecipeSearch';
 
 const HomePage = () => {
   return (
@@ -70,8 +71,9 @@ const HomePage = () => {
       </Grid>
 
       <Typography variant="h4" component="h2" sx={{ mt: 8, mb: 4 }}>
-        Latest Recipes
+        Explore Recipes
       </Typography>
+      <RecipeSearch />
       <RecipeList />
     </Container>
   );
