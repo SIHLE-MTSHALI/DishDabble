@@ -5,7 +5,9 @@ import CssBaseline from '@mui/material/CssBaseline';
 import theme from './styles/theme';
 
 // Components
+import Navigation from './components/layout/Navigation';
 import LandingPage from './pages/LandingPage';
+import HomePage from './pages/HomePage';
 import Register from './components/auth/Register';
 import Login from './components/auth/Login';
 import RecipeList from './components/recipes/RecipeList';
@@ -17,8 +19,10 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
+        <Navigation />
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/home" element={<HomePage />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/recipes" element={<RecipeList />} />

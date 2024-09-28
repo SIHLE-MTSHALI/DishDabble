@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import { Typography, Button, Container, Box } from '@mui/material';
 import { styled } from '@mui/system';
 
@@ -25,10 +26,23 @@ const LandingPage = () => {
           Discover, share, and create delicious recipes with our community
         </Typography>
         <Box mt={4}>
-          <Button variant="contained" color="primary" size="large">
+          <Button
+            component={RouterLink}
+            to="/register"
+            variant="contained"
+            color="primary"
+            size="large"
+            sx={{ mr: 2 }}
+          >
             Join Now
           </Button>
-          <Button variant="outlined" color="secondary" size="large" sx={{ ml: 2 }}>
+          <Button
+            component={RouterLink}
+            to="/recipes"
+            variant="outlined"
+            color="secondary"
+            size="large"
+          >
             Explore Recipes
           </Button>
         </Box>
