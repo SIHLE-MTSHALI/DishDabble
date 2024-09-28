@@ -7,6 +7,7 @@ import theme from './styles/theme';
 // Components
 import Navigation from './components/layout/Navigation';
 import Footer from './components/layout/Footer';
+import Alert from './components/layout/Alert';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import Register from './components/auth/Register';
@@ -23,6 +24,7 @@ function App() {
       <CssBaseline />
       <Router>
         <Navigation />
+        <Alert />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
