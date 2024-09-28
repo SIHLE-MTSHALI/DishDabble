@@ -1,11 +1,9 @@
 import { configureStore } from '@reduxjs/toolkit';
-
-// We'll add reducers here as we develop features
+import rootReducer from '../reducers';
 
 const store = configureStore({
-  reducer: {
-    // Add reducers here
-  },
+  reducer: rootReducer,
+  devTools: process.env.NODE_ENV !== 'production'
 });
 
 export default store;
