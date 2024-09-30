@@ -21,6 +21,10 @@ export const loadUser = () => async dispatch => {
     setAuthToken(localStorage.token);
   } else {
     console.log('No token found in localStorage');
+    dispatch({
+      type: AUTH_ERROR
+    });
+    return; // Return early if there's no token
   }
 
   try {

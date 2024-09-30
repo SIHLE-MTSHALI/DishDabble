@@ -13,9 +13,10 @@ import Footer from './components/layout/Footer';
 import Alert from './components/layout/Alert';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
+import ExplorePage from './pages/ExplorePage';
+import NotificationsPage from './pages/NotificationsPage';
 import Register from './components/auth/Register';
 import Login from './components/auth/Login';
-import RecipeList from './components/recipes/RecipeList';
 import RecipeDetail from './components/recipes/RecipeDetail';
 import RecipeForm from './components/recipes/RecipeForm';
 import ProfilePage from './pages/ProfilePage';
@@ -29,29 +30,37 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(loadUser());
+    if (localStorage.token) {
+      dispatch(loadUser());
+    }
   }, [dispatch]);
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
-        <Navigation />
-        <Alert />
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/recipes" element={<RecipeList />} />
-          <Route path="/recipes/:id" element={<RecipeDetail />} />
-          <Route element={<PrivateRoute />}>
-            <Route path="/add-recipe" element={<RecipeForm />} />
-            <Route path="/edit-recipe/:id" element={<RecipeForm />} />
-            <Route path="/profile" element={<ProfilePage />} />
-          </Route>
-        </Routes>
-        <Footer />
+        <div className="app-container">
+          <Navigation />
+          <main className="main-content">
+            <Alert />
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route element={<PrivateRoute />}>
+                <Route path="/home" element={<HomePage />} />
+                <Route path="/explore" element={<ExplorePage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/post/:id" element={<RecipeDetail />} />
+                <Route path="/create-post" element={<RecipeForm />} />
+                <Route path="/edit-post/:id" element={<RecipeForm />} />
+                <Route path="/profile/:username" element={<ProfilePage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+              </Route>
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
       </Router>
     </ThemeProvider>
   );

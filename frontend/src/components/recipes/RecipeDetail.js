@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getRecipe, likeRecipe, unlikeRecipe } from '../../actions/recipe';
 import Spinner from '../layout/Spinner';
-import { Typography, Container, Box, List, ListItem, ListItemText, Chip, Button, Grid, IconButton, Modal, Rating } from '@mui/material';
+import { Typography, Container, Box, List, ListItem, ListItemText, Chip, Button, Grid, IconButton, Modal } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import StarIcon from '@mui/icons-material/Star';

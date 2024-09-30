@@ -14,3 +14,5 @@ export const RECIPE_ERROR = 'RECIPE_ERROR';
 export const SEARCH_RECIPES = 'SEARCH_RECIPES';
 export const SET_ALERT = 'SET_ALERT';
 export const REMOVE_ALERT = 'REMOVE_ALERT';
+export const LIKE_RECIPE = 'LIKE_RECIPE';
+export const UNLIKE_RECIPE = 'UNLIKE_RECIPE';
