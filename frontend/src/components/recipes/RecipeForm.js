@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addRecipe, updateRecipe, getRecipe } from '../../actions/recipe';
-import { TextField, Button, Typography, Container, Box, Select, MenuItem, InputLabel, FormControl, Chip } from '@mui/material';
+import { TextField, Button, Typography, Container, Box, Select, MenuItem, InputLabel, FormControl, Chip, Input } from '@mui/material';
 
 const RecipeForm = () => {
   const dispatch = useDispatch();
@@ -19,8 +19,11 @@ const RecipeForm = () => {
     cookTime: '',
     difficulty: '',
     servings: '',
-    tags: []
+    tags: [],
+    images: []
   });
+
+  const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
     if (id) {
@@ -39,8 +42,12 @@ const RecipeForm = () => {
         cookTime: recipe.cookTime || '',
         difficulty: recipe.difficulty || '',
         servings: recipe.servings || '',
-        tags: recipe.tags || []
+        tags: recipe.tags || [],
+        images: recipe.images || []
       });
+      if (recipe.images && recipe.images.length > 0) {
+        setImagePreview(recipe.images[0]);
+      }
     }
   }, [id, recipe, loading]);
 
@@ -48,12 +55,25 @@ const RecipeForm = () => {
 
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const onSubmit = e => {
+  const onSubmit = async e => {
     e.preventDefault();
+    const formDataToSend = new FormData();
+    Object.keys(formData).forEach(key => {
+      if (key === 'ingredients' || key === 'instructions' || key === 'tags') {
+        formDataToSend.append(key, JSON.stringify(formData[key]));
+      } else if (key === 'images') {
+        formData[key].forEach(image => {
+          formDataToSend.append('images', image);
+        });
+      } else {
+        formDataToSend.append(key, formData[key]);
+      }
+    });
+
     if (id) {
-      dispatch(updateRecipe(id, formData));
+      await dispatch(updateRecipe(id, formDataToSend));
     } else {
-      dispatch(addRecipe(formData));
+      await dispatch(addRecipe(formDataToSend));
     }
     navigate('/recipes');
   };
@@ -77,6 +97,18 @@ const RecipeForm = () => {
   const removeInstruction = index => {
     const newInstructions = instructions.filter((_, i) => i !== index);
     setFormData({ ...formData, instructions: newInstructions });
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, images: [file] });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -229,6 +261,18 @@ const RecipeForm = () => {
               sx={{ mr: 1, mb: 1 }}
             />
           ))}
+        </Box>
+        <Box mt={2} mb={2}>
+          <Input
+            type="file"
+            onChange={handleImageChange}
+            accept="image/*"
+          />
+          {imagePreview && (
+            <Box mt={2}>
+              <img src={imagePreview} alt="Recipe preview" style={{ maxWidth: '100%', maxHeight: '200px' }} />
+            </Box>
+          )}
         </Box>
         <Button type="submit" variant="contained" color="primary" sx={{ mt: 3 }}>
           {id ? 'Update Recipe' : 'Add Recipe'}

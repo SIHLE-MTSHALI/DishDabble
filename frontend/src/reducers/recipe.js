@@ -5,7 +5,9 @@ import {
   UPDATE_RECIPE,
   DELETE_RECIPE,
   RECIPE_ERROR,
-  SEARCH_RECIPES
+  SEARCH_RECIPES,
+  LIKE_RECIPE,
+  UNLIKE_RECIPE
 } from '../actions/types';
 
 const initialState = {
@@ -51,6 +53,18 @@ export default function(state = initialState, action) {
       return {
         ...state,
         recipes: state.recipes.filter(recipe => recipe._id !== payload),
+        loading: false
+      };
+    case LIKE_RECIPE:
+    case UNLIKE_RECIPE:
+      return {
+        ...state,
+        recipes: state.recipes.map(recipe =>
+          recipe._id === payload.id ? { ...recipe, likes: payload.likes } : recipe
+        ),
+        recipe: state.recipe && state.recipe._id === payload.id
+          ? { ...state.recipe, likes: payload.likes }
+          : state.recipe,
         loading: false
       };
     case RECIPE_ERROR:

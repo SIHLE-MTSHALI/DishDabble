@@ -66,9 +66,24 @@ const RecipeSchema = new mongoose.Schema({
       type: Date,
       default: Date.now
     }
+  }],
+  likes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }]
 }, {
   timestamps: true
 });
+
+// Virtual for average rating
+RecipeSchema.virtual('averageRating').get(function() {
+  if (this.ratings.length === 0) return 0;
+  const sum = this.ratings.reduce((total, rating) => total + rating.value, 0);
+  return (sum / this.ratings.length).toFixed(1);
+});
+
+// Ensure virtuals are included when converting document to JSON
+RecipeSchema.set('toJSON', { virtuals: true });
+RecipeSchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model('Recipe', RecipeSchema);

@@ -7,7 +7,9 @@ import {
   UPDATE_RECIPE,
   DELETE_RECIPE,
   RECIPE_ERROR,
-  SEARCH_RECIPES
+  SEARCH_RECIPES,
+  LIKE_RECIPE,
+  UNLIKE_RECIPE
 } from './types';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -140,6 +142,40 @@ export const getUserRecipes = userId => async dispatch => {
     dispatch({
       type: GET_RECIPES,
       payload: res.data
+    });
+  } catch (err) {
+    dispatch({
+      type: RECIPE_ERROR,
+      payload: { msg: err.response.statusText, status: err.response.status }
+    });
+  }
+};
+
+// Like a recipe
+export const likeRecipe = id => async dispatch => {
+  try {
+    const res = await axios.put(`${API_URL}/api/recipes/like/${id}`);
+
+    dispatch({
+      type: LIKE_RECIPE,
+      payload: { id, likes: res.data }
+    });
+  } catch (err) {
+    dispatch({
+      type: RECIPE_ERROR,
+      payload: { msg: err.response.statusText, status: err.response.status }
+    });
+  }
+};
+
+// Unlike a recipe
+export const unlikeRecipe = id => async dispatch => {
+  try {
+    const res = await axios.put(`${API_URL}/api/recipes/unlike/${id}`);
+
+    dispatch({
+      type: UNLIKE_RECIPE,
+      payload: { id, likes: res.data }
     });
   } catch (err) {
     dispatch({

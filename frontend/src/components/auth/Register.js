@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { register } from '../../actions/auth';
+import { setAlert } from '../../actions/alert';
 import { TextField, Button, Typography, Container, Box } from '@mui/material';
 
 const Register = () => {
@@ -19,9 +20,17 @@ const Register = () => {
   const onSubmit = async e => {
     e.preventDefault();
     if (password !== password2) {
+      dispatch(setAlert('Passwords do not match', 'error'));
       console.log('Passwords do not match');
     } else {
-      dispatch(register({ name, email, password }));
+      console.log('Attempting to register with:', { name, email, password });
+      try {
+        await dispatch(register({ name, email, password }));
+        console.log('Registration successful');
+      } catch (error) {
+        console.error('Registration failed:', error);
+        dispatch(setAlert('Registration failed', 'error'));
+      }
     }
   };
 

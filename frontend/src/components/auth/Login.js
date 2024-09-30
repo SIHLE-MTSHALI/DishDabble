@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { login } from '../../actions/auth';
 import { TextField, Button, Typography, Container, Box } from '@mui/material';
 
 const Login = () => {
+  console.log('Login component rendered');
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -12,10 +14,27 @@ const Login = () => {
   const { email, password } = formData;
   const dispatch = useDispatch();
 
-  const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+  useEffect(() => {
+    console.log('Login component mounted or updated');
+  }, []);
+
+  const onChange = e => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    console.log(`${e.target.name} changed:`, e.target.value);
+  };
 
   const onSubmit = async e => {
     e.preventDefault();
+    console.log('Login form submitted');
+    console.log('Email:', email);
+    console.log('Password:', password);
+    dispatch(login(email, password));
+  };
+
+  const handleLogin = () => {
+    console.log('Login button clicked');
+    console.log('Email:', email);
+    console.log('Password:', password);
     dispatch(login(email, password));
   };
 
@@ -62,6 +81,7 @@ const Login = () => {
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
+            onClick={handleLogin}
           >
             Sign In
           </Button>
