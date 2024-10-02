@@ -1,16 +1,33 @@
-const express = require('express');
-const cors = require('cors');
-const connectDB = require('./config/db');
 require('dotenv').config();
+const express = require('express');
+const connectDB = require('./config/db');
+const path = require('path');
+const cors = require('cors');
+const http = require('http');
+const socketIo = require('socket.io');
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    methods: ['GET', 'POST']
+  }
+});
 
-// Connect to Database
+// Load environment variables
+const mongoURI = process.env.MONGO_URI;
+const jwtSecret = process.env.JWT_SECRET;
+
+console.log('MongoDB URI:', mongoURI);
+console.log('JWT Secret:', jwtSecret);
+
+// Connect Database
 connectDB();
 
-// Middleware
-app.use(cors());
+// Init Middleware
 app.use(express.json({ extended: false }));
+app.use(cors());
 
 // Logging middleware
 app.use((req, res, next) => {
@@ -18,16 +35,85 @@ app.use((req, res, next) => {
   next();
 });
 
+// Socket.IO
+io.on('connection', (socket) => {
+  console.log('New client connected');
+  
+  socket.on('join', (userId) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined their room`);
+  });
+
+  socket.on('likeRecipe', async ({ recipeId, userId }) => {
+    try {
+      const Recipe = require('./models/Recipe');
+      const recipe = await Recipe.findById(recipeId);
+      if (recipe) {
+        console.log(`Recipe ${recipeId} liked by user ${userId}`);
+        io.to(recipe.user.toString()).emit('recipeLiked', {
+          recipeId,
+          likes: recipe.likes
+        });
+      }
+    } catch (error) {
+      console.error('Error in likeRecipe socket event:', error);
+    }
+  });
+
+  socket.on('commentRecipe', async ({ recipeId, userId, comment }) => {
+    try {
+      const Recipe = require('./models/Recipe');
+      const recipe = await Recipe.findById(recipeId);
+      if (recipe) {
+        console.log(`Recipe ${recipeId} commented by user ${userId}`);
+        io.to(recipe.user.toString()).emit('recipeCommented', {
+          recipeId,
+          comments: recipe.comments
+        });
+      }
+    } catch (error) {
+      console.error('Error in commentRecipe socket event:', error);
+    }
+  });
+
+  socket.on('followUser', async ({ userId, followerId }) => {
+    try {
+      const User = require('./models/User');
+      const user = await User.findById(userId);
+      if (user) {
+        console.log(`User ${userId} followed by user ${followerId}`);
+        io.to(userId).emit('followerUpdated', {
+          followers: user.followers
+        });
+      }
+    } catch (error) {
+      console.error('Error in followUser socket event:', error);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
+});
+
+// Make io accessible to our router
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 // Routes
 app.use('/api/users', require('./routes/api/users'));
 app.use('/api/auth', require('./routes/api/auth'));
 app.use('/api/recipes', require('./routes/api/recipes'));
+app.use('/api/notifications', require('./routes/api/notifications'));
 
 // Search route
 app.get('/api/recipes/search', async (req, res) => {
   try {
     const { term } = req.query;
     console.log(`Searching for recipes with term: ${term}`);
+    const Recipe = require('./models/Recipe');
     const recipes = await Recipe.find({
       $or: [
         { title: { $regex: term, $options: 'i' } },
@@ -46,7 +132,7 @@ app.get('/api/recipes/search', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
   console.log(`API is running at http://localhost:${PORT}`);
   console.log('Press CTRL-C to stop the server');

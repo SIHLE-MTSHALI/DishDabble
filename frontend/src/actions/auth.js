@@ -7,9 +7,13 @@ import {
   AUTH_ERROR,
   LOGIN_SUCCESS,
   LOGIN_FAIL,
-  LOGOUT
+  LOGOUT,
+  FOLLOW_USER,
+  UNFOLLOW_USER,
+  UPDATE_FOLLOWERS
 } from './types';
 import setAuthToken from '../utils/setAuthToken';
+import { emitFollowUser } from '../utils/socket';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -153,4 +157,54 @@ export const logout = () => dispatch => {
   setAuthToken(null);
   console.log('Token removed on logout');
   dispatch({ type: LOGOUT });
+};
+
+// Follow User
+export const followUser = userId => async dispatch => {
+  try {
+    console.log(`Attempting to follow user: ${userId}`);
+    const res = await axios.put(`${API_URL}/api/users/follow/${userId}`);
+    console.log('Follow user response:', res.data);
+
+    dispatch({
+      type: FOLLOW_USER,
+      payload: res.data
+    });
+
+    emitFollowUser(userId);
+    console.log(`Emitted followUser event for user: ${userId}`);
+
+    dispatch(setAlert('User followed successfully', 'success'));
+  } catch (err) {
+    console.error('Error following user:', err.response ? err.response.data : err.message);
+    dispatch(setAlert('Error following user', 'danger'));
+  }
+};
+
+// Unfollow User
+export const unfollowUser = userId => async dispatch => {
+  try {
+    console.log(`Attempting to unfollow user: ${userId}`);
+    const res = await axios.put(`${API_URL}/api/users/unfollow/${userId}`);
+    console.log('Unfollow user response:', res.data);
+
+    dispatch({
+      type: UNFOLLOW_USER,
+      payload: res.data
+    });
+
+    dispatch(setAlert('User unfollowed successfully', 'success'));
+  } catch (err) {
+    console.error('Error unfollowing user:', err.response ? err.response.data : err.message);
+    dispatch(setAlert('Error unfollowing user', 'danger'));
+  }
+};
+
+// Update Followers
+export const updateFollowers = followers => dispatch => {
+  console.log('Updating followers:', followers);
+  dispatch({
+    type: UPDATE_FOLLOWERS,
+    payload: followers
+  });
 };

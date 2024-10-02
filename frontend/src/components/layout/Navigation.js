@@ -1,12 +1,16 @@
 import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Box, IconButton, Badge } from '@mui/material';
+import { Home, Explore, AddCircleOutline, Notifications, AccountCircle } from '@mui/icons-material';
 import { logout } from '../../actions/auth';
 
 const Navigation = () => {
   const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+  const notifications = useSelector(state => state.notification.notifications);
   const dispatch = useDispatch();
+
+  const unreadNotificationsCount = notifications.filter(n => !n.read).length;
 
   const handleLogout = () => {
     dispatch(logout());
@@ -19,14 +23,25 @@ const Navigation = () => {
           DishDabble
         </Typography>
         <Box>
-          <Button color="inherit" component={RouterLink} to="/recipes">
-            Recipes
-          </Button>
           {isAuthenticated ? (
             <>
-              <Button color="inherit" component={RouterLink} to="/add-recipe">
-                Add Recipe
-              </Button>
+              <IconButton color="inherit" component={RouterLink} to="/home">
+                <Home />
+              </IconButton>
+              <IconButton color="inherit" component={RouterLink} to="/explore">
+                <Explore />
+              </IconButton>
+              <IconButton color="inherit" component={RouterLink} to="/create-recipe">
+                <AddCircleOutline />
+              </IconButton>
+              <IconButton color="inherit" component={RouterLink} to="/notifications">
+                <Badge badgeContent={unreadNotificationsCount} color="secondary">
+                  <Notifications />
+                </Badge>
+              </IconButton>
+              <IconButton color="inherit" component={RouterLink} to="/profile">
+                <AccountCircle />
+              </IconButton>
               <Button color="inherit" onClick={handleLogout}>
                 Logout
               </Button>

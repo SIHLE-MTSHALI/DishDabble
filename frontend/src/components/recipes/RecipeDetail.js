@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { getRecipe, likeRecipe, unlikeRecipe } from '../../actions/recipe';
+import { getRecipe, likeRecipe, unlikeRecipe, saveRecipe, unsaveRecipe, addComment } from '../../actions/recipe';
 import Spinner from '../layout/Spinner';
-import { Typography, Container, Box, List, ListItem, ListItemText, Chip, Button, Grid, IconButton, Modal } from '@mui/material';
+import { Typography, Container, Box, List, ListItem, ListItemText, Chip, Button, Grid, IconButton, Modal, TextField } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import StarIcon from '@mui/icons-material/Star';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { emitLikeRecipe, emitCommentRecipe } from '../../utils/socket';
 
 const RecipeDetail = () => {
   const { id } = useParams();
@@ -17,6 +20,7 @@ const RecipeDetail = () => {
   const { user, isAuthenticated } = useSelector(state => state.auth);
   const [openModal, setOpenModal] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [comment, setComment] = useState('');
 
   useEffect(() => {
     dispatch(getRecipe(id));
@@ -28,7 +32,27 @@ const RecipeDetail = () => {
         dispatch(unlikeRecipe(recipe._id));
       } else {
         dispatch(likeRecipe(recipe._id));
+        emitLikeRecipe(recipe._id);
       }
+    }
+  };
+
+  const handleSave = () => {
+    if (isAuthenticated) {
+      if (recipe.saves.includes(user._id)) {
+        dispatch(unsaveRecipe(recipe._id));
+      } else {
+        dispatch(saveRecipe(recipe._id));
+      }
+    }
+  };
+
+  const handleCommentSubmit = (e) => {
+    e.preventDefault();
+    if (comment.trim() !== '') {
+      dispatch(addComment(recipe._id, comment));
+      emitCommentRecipe(recipe._id, comment);
+      setComment('');
     }
   };
 
@@ -141,8 +165,18 @@ const RecipeDetail = () => {
                 <FavoriteBorderIcon />
               )}
             </IconButton>
-            <Typography variant="body1">
+            <Typography variant="body1" mr={2}>
               {recipe.likes.length} {recipe.likes.length === 1 ? 'like' : 'likes'}
+            </Typography>
+            <IconButton onClick={handleSave} disabled={!isAuthenticated}>
+              {recipe.saves.includes(user?._id) ? (
+                <BookmarkIcon color="primary" />
+              ) : (
+                <BookmarkBorderIcon />
+              )}
+            </IconButton>
+            <Typography variant="body1">
+              {recipe.saves.length} {recipe.saves.length === 1 ? 'save' : 'saves'}
             </Typography>
           </Box>
           <Typography variant="body1" mb={2}>
@@ -175,6 +209,34 @@ const RecipeDetail = () => {
             </ListItem>
           ))}
         </List>
+      </Box>
+      <Box my={4}>
+        <Typography variant="h6" gutterBottom>Comments</Typography>
+        {isAuthenticated ? (
+          <Box component="form" onSubmit={handleCommentSubmit} sx={{ mb: 2 }}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Add a comment"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              sx={{ mb: 1 }}
+            />
+            <Button type="submit" variant="contained" color="primary">
+              Post Comment
+            </Button>
+          </Box>
+        ) : (
+          <Typography variant="body2" mb={2}>
+            Please <Link to="/login">log in</Link> to add a comment.
+          </Typography>
+        )}
+        {recipe.comments.map((comment, index) => (
+          <Box key={index} sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+            <Typography variant="subtitle2">{comment.name}</Typography>
+            <Typography variant="body1">{comment.text}</Typography>
+          </Box>
+        ))}
       </Box>
       {user && user._id === recipe.user._id && (
         <Box mt={3}>

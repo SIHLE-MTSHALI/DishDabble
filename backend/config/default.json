@@ -1,0 +1,4 @@
+{
+  "mongoURI": "mongodb://localhost:27017/dishdabble",
+  "jwtSecret": "d006568b28b316207dd7e6ce74ccf23a3fc2f8b0b228c3261ce7542d014bae40"
+}

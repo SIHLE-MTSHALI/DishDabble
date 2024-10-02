@@ -1,7 +1,9 @@
 const { validationResult } = require('express-validator');
 const Recipe = require('../models/Recipe');
+const User = require('../models/User');
 const fs = require('fs');
 const path = require('path');
+const notificationController = require('./notificationController');
 
 // Helper function to delete image file
 const deleteImage = (filename) => {
@@ -38,10 +40,25 @@ exports.createRecipe = async (req, res) => {
 
 exports.getAllRecipes = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const startIndex = (page - 1) * limit;
+
+    const totalRecipes = await Recipe.countDocuments();
     const recipes = await Recipe.find()
       .populate('user', ['name', 'avatar'])
-      .sort({ likes: -1, date: -1 });
-    res.json(recipes);
+      .sort({ createdAt: -1 })
+      .skip(startIndex)
+      .limit(limit);
+
+    const hasMore = startIndex + recipes.length < totalRecipes;
+
+    res.json({
+      recipes,
+      hasMore,
+      currentPage: page,
+      totalPages: Math.ceil(totalRecipes / limit)
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -141,16 +158,26 @@ exports.likeRecipe = async (req, res) => {
     }
 
     // Check if the recipe has already been liked by this user
-    if (recipe.likes.some((like) => like.toString() === req.user.id)) {
+    if (recipe.likes.includes(req.user.id)) {
       return res.status(400).json({ msg: 'Recipe already liked' });
     }
 
-    recipe.likes.unshift(req.user.id);
+    recipe.likes.push(req.user.id);
     await recipe.save();
 
+    // Create notification
+    await notificationController.createNotification('like', recipe.user, req.user.id, recipe._id);
+
+    // Emit socket event
+    req.io.to(recipe.user.toString()).emit('recipeLiked', {
+      recipeId: recipe._id,
+      likes: recipe.likes
+    });
+
+    console.log(`Recipe ${recipe._id} liked by user ${req.user.id}`);
     res.json(recipe.likes);
   } catch (err) {
-    console.error(err.message);
+    console.error('Error in likeRecipe:', err.message);
     res.status(500).send('Server Error');
   }
 };
@@ -164,18 +191,108 @@ exports.unlikeRecipe = async (req, res) => {
     }
 
     // Check if the recipe has not yet been liked by this user
-    if (!recipe.likes.some((like) => like.toString() === req.user.id)) {
+    if (!recipe.likes.includes(req.user.id)) {
       return res.status(400).json({ msg: 'Recipe has not yet been liked' });
     }
 
     // Remove the like
-    recipe.likes = recipe.likes.filter(
-      (like) => like.toString() !== req.user.id
-    );
+    recipe.likes = recipe.likes.filter(like => like.toString() !== req.user.id);
 
     await recipe.save();
 
+    // Emit socket event
+    req.io.to(recipe.user.toString()).emit('recipeLiked', {
+      recipeId: recipe._id,
+      likes: recipe.likes
+    });
+
+    console.log(`Recipe ${recipe._id} unliked by user ${req.user.id}`);
     res.json(recipe.likes);
+  } catch (err) {
+    console.error('Error in unlikeRecipe:', err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+exports.saveRecipe = async (req, res) => {
+  try {
+    const recipe = await Recipe.findById(req.params.id);
+
+    if (!recipe) {
+      return res.status(404).json({ msg: 'Recipe not found' });
+    }
+
+    // Check if the recipe has already been saved by this user
+    if (recipe.saves.includes(req.user.id)) {
+      return res.status(400).json({ msg: 'Recipe already saved' });
+    }
+
+    recipe.saves.push(req.user.id);
+    await recipe.save();
+
+    // Create notification
+    await notificationController.createNotification('save', recipe.user, req.user.id, recipe._id);
+
+    res.json(recipe.saves);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+exports.unsaveRecipe = async (req, res) => {
+  try {
+    const recipe = await Recipe.findById(req.params.id);
+
+    if (!recipe) {
+      return res.status(404).json({ msg: 'Recipe not found' });
+    }
+
+    // Check if the recipe has not yet been saved by this user
+    if (!recipe.saves.includes(req.user.id)) {
+      return res.status(400).json({ msg: 'Recipe has not yet been saved' });
+    }
+
+    // Remove the save
+    recipe.saves = recipe.saves.filter(save => save.toString() !== req.user.id);
+
+    await recipe.save();
+
+    res.json(recipe.saves);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+exports.rateRecipe = async (req, res) => {
+  try {
+    const recipe = await Recipe.findById(req.params.id);
+
+    if (!recipe) {
+      return res.status(404).json({ msg: 'Recipe not found' });
+    }
+
+    const { rating } = req.body;
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ msg: 'Rating must be between 1 and 5' });
+    }
+
+    // Check if the user has already rated this recipe
+    const ratingIndex = recipe.ratings.findIndex(r => r.user.toString() === req.user.id);
+
+    if (ratingIndex > -1) {
+      // Update existing rating
+      recipe.ratings[ratingIndex].value = rating;
+    } else {
+      // Add new rating
+      recipe.ratings.push({ user: req.user.id, value: rating });
+    }
+
+    await recipe.save();
+
+    res.json(recipe.ratings);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -184,8 +301,24 @@ exports.unlikeRecipe = async (req, res) => {
 
 exports.getUserRecipes = async (req, res) => {
   try {
-    const recipes = await Recipe.find({ user: req.params.userId }).sort({ date: -1 });
-    res.json(recipes);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const startIndex = (page - 1) * limit;
+
+    const totalRecipes = await Recipe.countDocuments({ user: req.params.userId });
+    const recipes = await Recipe.find({ user: req.params.userId })
+      .sort({ createdAt: -1 })
+      .skip(startIndex)
+      .limit(limit);
+
+    const hasMore = startIndex + recipes.length < totalRecipes;
+
+    res.json({
+      recipes,
+      hasMore,
+      currentPage: page,
+      totalPages: Math.ceil(totalRecipes / limit)
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -195,17 +328,133 @@ exports.getUserRecipes = async (req, res) => {
 exports.searchRecipes = async (req, res) => {
   try {
     const { term } = req.query;
-    const recipes = await Recipe.find({
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const startIndex = (page - 1) * limit;
+
+    const query = {
       $or: [
         { title: { $regex: term, $options: 'i' } },
         { description: { $regex: term, $options: 'i' } },
         { 'ingredients.name': { $regex: term, $options: 'i' } },
         { tags: { $regex: term, $options: 'i' } }
       ]
+    };
+
+    const totalRecipes = await Recipe.countDocuments(query);
+    const recipes = await Recipe.find(query)
+      .populate('user', ['name', 'avatar'])
+      .sort({ createdAt: -1 })
+      .skip(startIndex)
+      .limit(limit);
+
+    const hasMore = startIndex + recipes.length < totalRecipes;
+
+    res.json({
+      recipes,
+      hasMore,
+      currentPage: page,
+      totalPages: Math.ceil(totalRecipes / limit)
     });
-    res.json(recipes);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
   }
 };
+
+exports.getTrendingRecipes = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const startIndex = (page - 1) * limit;
+
+    const totalRecipes = await Recipe.countDocuments();
+    const recipes = await Recipe.find()
+      .sort({ likes: -1, saves: -1, createdAt: -1 })
+      .populate('user', ['name', 'avatar'])
+      .skip(startIndex)
+      .limit(limit);
+
+    const hasMore = startIndex + recipes.length < totalRecipes;
+
+    res.json({
+      recipes,
+      hasMore,
+      currentPage: page,
+      totalPages: Math.ceil(totalRecipes / limit)
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+exports.getFeedRecipes = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const startIndex = (page - 1) * limit;
+
+    // Get the list of users that the current user follows
+    const user = await User.findById(req.user.id);
+    const following = user.following;
+
+    const totalRecipes = await Recipe.countDocuments({ user: { $in: following } });
+    const recipes = await Recipe.find({ user: { $in: following } })
+      .sort({ createdAt: -1 })
+      .populate('user', ['name', 'avatar'])
+      .skip(startIndex)
+      .limit(limit);
+
+    const hasMore = startIndex + recipes.length < totalRecipes;
+
+    res.json({
+      recipes,
+      hasMore,
+      currentPage: page,
+      totalPages: Math.ceil(totalRecipes / limit)
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+exports.commentRecipe = async (req, res) => {
+  const { text } = req.body;
+
+  try {
+    const recipe = await Recipe.findById(req.params.id);
+
+    if (!recipe) {
+      return res.status(404).json({ msg: 'Recipe not found' });
+    }
+
+    const newComment = {
+      user: req.user.id,
+      text,
+      name: req.user.name,
+      avatar: req.user.avatar
+    };
+
+    recipe.comments.unshift(newComment);
+    await recipe.save();
+
+    // Create notification
+    await notificationController.createNotification('comment', recipe.user, req.user.id, recipe._id);
+
+    // Emit socket event
+    req.io.to(recipe.user.toString()).emit('recipeCommented', {
+      recipeId: recipe._id,
+      comments: recipe.comments
+    });
+
+    console.log(`Recipe ${recipe._id} commented by user ${req.user.id}`);
+    res.json(recipe.comments);
+  } catch (err) {
+    console.error('Error in commentRecipe:', err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+module.exports = exports;

@@ -53,7 +53,7 @@ router.post(
 );
 
 // @route   GET api/recipes
-// @desc    Get all recipes
+// @desc    Get all recipes with pagination
 // @access  Public
 router.get('/', recipeController.getAllRecipes);
 
@@ -89,14 +89,48 @@ router.put('/like/:id', auth, recipeController.likeRecipe);
 // @access  Private
 router.put('/unlike/:id', auth, recipeController.unlikeRecipe);
 
+// @route   PUT api/recipes/save/:id
+// @desc    Save a recipe
+// @access  Private
+router.put('/save/:id', auth, recipeController.saveRecipe);
+
+// @route   PUT api/recipes/unsave/:id
+// @desc    Unsave a recipe
+// @access  Private
+router.put('/unsave/:id', auth, recipeController.unsaveRecipe);
+
+// @route   POST api/recipes/rate/:id
+// @desc    Rate a recipe
+// @access  Private
+router.post(
+  '/rate/:id',
+  [
+    auth,
+    [
+      check('rating', 'Rating must be between 1 and 5').isInt({ min: 1, max: 5 })
+    ]
+  ],
+  recipeController.rateRecipe
+);
+
 // @route   GET api/recipes/user/:userId
-// @desc    Get recipes by user ID
+// @desc    Get recipes by user ID with pagination
 // @access  Public
 router.get('/user/:userId', recipeController.getUserRecipes);
 
 // @route   GET api/recipes/search
-// @desc    Search recipes
+// @desc    Search recipes with pagination
 // @access  Public
 router.get('/search', recipeController.searchRecipes);
+
+// @route   GET api/recipes/trending
+// @desc    Get trending recipes with pagination
+// @access  Public
+router.get('/trending', recipeController.getTrendingRecipes);
+
+// @route   GET api/recipes/feed
+// @desc    Get feed recipes for authenticated user with pagination
+// @access  Private
+router.get('/feed', auth, recipeController.getFeedRecipes);
 
 module.exports = router;

@@ -1,80 +1,66 @@
-import React from 'react';
-import { Typography, Container, Grid, Card, CardContent, CardMedia } from '@mui/material';
-import RecipeList from '../components/recipes/RecipeList';
-import RecipeSearch from '../components/recipes/RecipeSearch';
+import React, { useEffect, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  Container,
+  Typography,
+  Box,
+  CircularProgress,
+} from '@mui/material';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import RecipePost from '../components/recipes/RecipePost';
+import { getFeedRecipes } from '../actions/recipe';
+import { fadeIn } from '../styles/animations';
 
 const HomePage = () => {
+  const dispatch = useDispatch();
+  const { feedRecipes, loading, hasMore, page } = useSelector((state) => state.recipe);
+
+  useEffect(() => {
+    dispatch(getFeedRecipes(1));
+  }, [dispatch]);
+
+  const loadMoreRecipes = useCallback(() => {
+    if (hasMore) {
+      dispatch(getFeedRecipes(page + 1));
+    }
+  }, [dispatch, hasMore, page]);
+
+  if (loading && page === 1) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 4, mb: 4, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
+
   return (
-    <Container maxWidth="lg">
-      <Typography variant="h2" component="h1" align="center" gutterBottom>
-        Welcome to DishDabble
+    <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+        Your Feed
       </Typography>
-      <Typography variant="h5" align="center" color="textSecondary" paragraph>
-        Discover, share, and create delicious recipes with our community of food enthusiasts.
-      </Typography>
-
-      <Grid container spacing={4} sx={{ mt: 4 }}>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardMedia
-              component="img"
-              height="140"
-              image="https://source.unsplash.com/random/?cooking"
-              alt="Discover Recipes"
-            />
-            <CardContent>
-              <Typography gutterBottom variant="h5" component="div">
-                Discover Recipes
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Explore a wide variety of recipes from around the world, suited for all skill levels and dietary preferences.
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardMedia
-              component="img"
-              height="140"
-              image="https://source.unsplash.com/random/?sharing-food"
-              alt="Share Your Creations"
-            />
-            <CardContent>
-              <Typography gutterBottom variant="h5" component="div">
-                Share Your Creations
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Show off your culinary skills by sharing your own recipes with the DishDabble community.
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardMedia
-              component="img"
-              height="140"
-              image="https://source.unsplash.com/random/?food-community"
-              alt="Join the Community"
-            />
-            <CardContent>
-              <Typography gutterBottom variant="h5" component="div">
-                Join the Community
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Connect with fellow food lovers, exchange tips, and get inspired by the diverse DishDabble community.
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      <Typography variant="h4" component="h2" sx={{ mt: 8, mb: 4 }}>
-        Explore Recipes
-      </Typography>
-      <RecipeSearch />
-      <RecipeList />
+      {feedRecipes.length === 0 ? (
+        <Typography variant="body1" align="center" sx={{ mt: 2 }}>
+          No recipes in your feed. Follow some users to see their recipes!
+        </Typography>
+      ) : (
+        <InfiniteScroll
+          dataLength={feedRecipes.length}
+          next={loadMoreRecipes}
+          hasMore={hasMore}
+          loader={<CircularProgress sx={{ mt: 2, mb: 2 }} />}
+          endMessage={
+            <Typography variant="body2" align="center" sx={{ mt: 2, mb: 2 }}>
+              You've seen all the recipes in your feed!
+            </Typography>
+          }
+        >
+          {feedRecipes.map((recipe) => (
+            <Box key={recipe._id} sx={{ mb: 4, animation: `${fadeIn} 1s ease-out` }}>
+              <RecipePost recipe={recipe} />
+            </Box>
+          ))}
+        </InfiniteScroll>
+      )}
     </Container>
   );
 };

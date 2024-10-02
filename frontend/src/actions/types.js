@@ -1,3 +1,4 @@
+// Auth
 export const REGISTER_SUCCESS = 'REGISTER_SUCCESS';
 export const REGISTER_FAIL = 'REGISTER_FAIL';
 export const USER_LOADED = 'USER_LOADED';
@@ -5,6 +6,12 @@ export const AUTH_ERROR = 'AUTH_ERROR';
 export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
 export const LOGIN_FAIL = 'LOGIN_FAIL';
 export const LOGOUT = 'LOGOUT';
+
+// Alert
+export const SET_ALERT = 'SET_ALERT';
+export const REMOVE_ALERT = 'REMOVE_ALERT';
+
+// Recipe
 export const GET_RECIPES = 'GET_RECIPES';
 export const GET_RECIPE = 'GET_RECIPE';
 export const ADD_RECIPE = 'ADD_RECIPE';
@@ -12,7 +19,24 @@ export const UPDATE_RECIPE = 'UPDATE_RECIPE';
 export const DELETE_RECIPE = 'DELETE_RECIPE';
 export const RECIPE_ERROR = 'RECIPE_ERROR';
 export const SEARCH_RECIPES = 'SEARCH_RECIPES';
-export const SET_ALERT = 'SET_ALERT';
-export const REMOVE_ALERT = 'REMOVE_ALERT';
 export const LIKE_RECIPE = 'LIKE_RECIPE';
 export const UNLIKE_RECIPE = 'UNLIKE_RECIPE';
+export const SAVE_RECIPE = 'SAVE_RECIPE';
+export const UNSAVE_RECIPE = 'UNSAVE_RECIPE';
+export const RATE_RECIPE = 'RATE_RECIPE';
+export const GET_TRENDING_RECIPES = 'GET_TRENDING_RECIPES';
+export const GET_FEED_RECIPES = 'GET_FEED_RECIPES';
+export const UPDATE_RECIPE_LIKES = 'UPDATE_RECIPE_LIKES';
+export const UPDATE_RECIPE_COMMENTS = 'UPDATE_RECIPE_COMMENTS';
+export const GET_MORE_RECIPES = 'GET_MORE_RECIPES';
+
+// Notification
+export const GET_NOTIFICATIONS = 'GET_NOTIFICATIONS';
+export const ADD_NOTIFICATION = 'ADD_NOTIFICATION';
+export const MARK_NOTIFICATION_READ = 'MARK_NOTIFICATION_READ';
+export const NOTIFICATION_ERROR = 'NOTIFICATION_ERROR';
+
+// User
+export const FOLLOW_USER = 'FOLLOW_USER';
+export const UNFOLLOW_USER = 'UNFOLLOW_USER';
+export const UPDATE_FOLLOWERS = 'UPDATE_FOLLOWERS';

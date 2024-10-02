@@ -2,10 +2,14 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import theme from './styles/theme';
 import { loadUser } from './actions/auth';
 import setAuthToken from './utils/setAuthToken';
+import { initiateSocket, disconnectSocket, subscribeToNotifications } from './utils/socket';
+import { addNotification } from './actions/notification';
+import { updateRecipeLikes, updateRecipeComments } from './actions/recipe';
+import { updateFollowers } from './actions/auth';
 
 // Components
 import Navigation from './components/layout/Navigation';
@@ -28,12 +32,46 @@ if (localStorage.token) {
 
 function App() {
   const dispatch = useDispatch();
+  const auth = useSelector(state => state.auth);
 
   useEffect(() => {
-    if (localStorage.token) {
-      dispatch(loadUser());
-    }
+    dispatch(loadUser());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (auth.isAuthenticated && auth.user) {
+      console.log('Initializing socket connection for user:', auth.user._id);
+      initiateSocket(auth.user._id);
+      
+      subscribeToNotifications((err, data) => {
+        if (err) {
+          console.error('Error in socket subscription:', err);
+          return;
+        }
+        
+        console.log('Received socket event:', data);
+        
+        if (data.type === 'notification') {
+          console.log('Dispatching addNotification');
+          dispatch(addNotification(data.payload));
+        } else if (data.type === 'recipeLiked') {
+          console.log('Dispatching updateRecipeLikes');
+          dispatch(updateRecipeLikes(data.payload.recipeId, data.payload.likes));
+        } else if (data.type === 'recipeCommented') {
+          console.log('Dispatching updateRecipeComments');
+          dispatch(updateRecipeComments(data.payload.recipeId, data.payload.comments));
+        } else if (data.type === 'followerUpdated') {
+          console.log('Dispatching updateFollowers');
+          dispatch(updateFollowers(data.payload.followers));
+        }
+      });
+    }
+    
+    return () => {
+      console.log('Disconnecting socket');
+      disconnectSocket();
+    };
+  }, [auth.isAuthenticated, auth.user, dispatch]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -49,9 +87,9 @@ function App() {
                 <Route path="/home" element={<HomePage />} />
                 <Route path="/explore" element={<ExplorePage />} />
                 <Route path="/notifications" element={<NotificationsPage />} />
-                <Route path="/post/:id" element={<RecipeDetail />} />
-                <Route path="/create-post" element={<RecipeForm />} />
-                <Route path="/edit-post/:id" element={<RecipeForm />} />
+                <Route path="/recipe/:id" element={<RecipeDetail />} />
+                <Route path="/create-recipe" element={<RecipeForm />} />
+                <Route path="/edit-recipe/:id" element={<RecipeForm />} />
                 <Route path="/profile/:username" element={<ProfilePage />} />
                 <Route path="/profile" element={<ProfilePage />} />
               </Route>

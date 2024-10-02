@@ -2,7 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addRecipe, updateRecipe, getRecipe } from '../../actions/recipe';
-import { TextField, Button, Typography, Container, Box, Select, MenuItem, InputLabel, FormControl, Chip, Input } from '@mui/material';
+import {
+  TextField,
+  Button,
+  Typography,
+  Container,
+  Box,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Chip,
+  Input,
+  Rating,
+  Grid,
+  IconButton,
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const RecipeForm = () => {
   const dispatch = useDispatch();
@@ -20,10 +36,11 @@ const RecipeForm = () => {
     difficulty: '',
     servings: '',
     tags: [],
-    images: []
+    images: [],
+    rating: 0
   });
 
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imagePreviews, setImagePreviews] = useState([]);
 
   useEffect(() => {
     if (id) {
@@ -43,15 +60,16 @@ const RecipeForm = () => {
         difficulty: recipe.difficulty || '',
         servings: recipe.servings || '',
         tags: recipe.tags || [],
-        images: recipe.images || []
+        images: [],
+        rating: recipe.rating || 0
       });
       if (recipe.images && recipe.images.length > 0) {
-        setImagePreview(recipe.images[0]);
+        setImagePreviews(recipe.images);
       }
     }
   }, [id, recipe, loading]);
 
-  const { title, description, ingredients, instructions, prepTime, cookTime, difficulty, servings, tags } = formData;
+  const { title, description, ingredients, instructions, prepTime, cookTime, difficulty, servings, tags, rating } = formData;
 
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -75,7 +93,7 @@ const RecipeForm = () => {
     } else {
       await dispatch(addRecipe(formDataToSend));
     }
-    navigate('/recipes');
+    navigate('/home');
   };
 
   const addIngredient = () => {
@@ -100,15 +118,18 @@ const RecipeForm = () => {
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData({ ...formData, images: [file] });
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
+    const files = Array.from(e.target.files);
+    setFormData({ ...formData, images: [...formData.images, ...files] });
+
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    setImagePreviews([...imagePreviews, ...newPreviews]);
+  };
+
+  const removeImage = (index) => {
+    const newImages = formData.images.filter((_, i) => i !== index);
+    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    setFormData({ ...formData, images: newImages });
+    setImagePreviews(newPreviews);
   };
 
   return (
@@ -198,26 +219,31 @@ const RecipeForm = () => {
         ))}
         <Button onClick={addInstruction}>Add Instruction</Button>
 
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Preparation Time (minutes)"
-          name="prepTime"
-          type="number"
-          value={prepTime}
-          onChange={onChange}
-          required
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Cooking Time (minutes)"
-          name="cookTime"
-          type="number"
-          value={cookTime}
-          onChange={onChange}
-          required
-        />
+        <Grid container spacing={2} sx={{ mt: 2 }}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Preparation Time (minutes)"
+              name="prepTime"
+              type="number"
+              value={prepTime}
+              onChange={onChange}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Cooking Time (minutes)"
+              name="cookTime"
+              type="number"
+              value={cookTime}
+              onChange={onChange}
+              required
+            />
+          </Grid>
+        </Grid>
+
         <FormControl fullWidth margin="normal">
           <InputLabel>Difficulty</InputLabel>
           <Select
@@ -231,6 +257,7 @@ const RecipeForm = () => {
             <MenuItem value="Hard">Hard</MenuItem>
           </Select>
         </FormControl>
+
         <TextField
           fullWidth
           margin="normal"
@@ -241,6 +268,7 @@ const RecipeForm = () => {
           onChange={onChange}
           required
         />
+
         <TextField
           fullWidth
           margin="normal"
@@ -249,6 +277,7 @@ const RecipeForm = () => {
           value={tags.join(', ')}
           onChange={e => setFormData({ ...formData, tags: e.target.value.split(',').map(tag => tag.trim()) })}
         />
+
         <Box mt={2} mb={2}>
           {tags.map((tag, index) => (
             <Chip
@@ -262,18 +291,41 @@ const RecipeForm = () => {
             />
           ))}
         </Box>
+
+        <Box mt={2} mb={2}>
+          <Typography component="legend">Rating</Typography>
+          <Rating
+            name="rating"
+            value={rating}
+            onChange={(event, newValue) => {
+              setFormData({ ...formData, rating: newValue });
+            }}
+          />
+        </Box>
+
         <Box mt={2} mb={2}>
           <Input
             type="file"
             onChange={handleImageChange}
+            inputProps={{ multiple: true }}
             accept="image/*"
           />
-          {imagePreview && (
-            <Box mt={2}>
-              <img src={imagePreview} alt="Recipe preview" style={{ maxWidth: '100%', maxHeight: '200px' }} />
-            </Box>
-          )}
+          <Box mt={2} display="flex" flexWrap="wrap">
+            {imagePreviews.map((preview, index) => (
+              <Box key={index} position="relative" mr={2} mb={2}>
+                <img src={preview} alt={`Recipe preview ${index + 1}`} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
+                <IconButton
+                  size="small"
+                  onClick={() => removeImage(index)}
+                  sx={{ position: 'absolute', top: 0, right: 0, bgcolor: 'background.paper' }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            ))}
+          </Box>
         </Box>
+
         <Button type="submit" variant="contained" color="primary" sx={{ mt: 3 }}>
           {id ? 'Update Recipe' : 'Add Recipe'}
         </Button>
