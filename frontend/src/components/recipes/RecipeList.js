@@ -10,21 +10,26 @@ const RecipeList = () => {
   const { recipes, loading, error } = useSelector(state => state.recipe);
 
   useEffect(() => {
+    console.log('RecipeList: Dispatching getRecipes action');
     dispatch(getRecipes());
   }, [dispatch]);
 
   useEffect(() => {
+    console.log('RecipeList: Recipes state updated', recipes);
     if (recipes.length > 0) {
       console.log('Recipes loaded:', recipes);
+    } else {
+      console.log('No recipes loaded');
     }
   }, [recipes]);
 
   if (loading) {
+    console.log('RecipeList: Loading...');
     return <Spinner />;
   }
 
   if (error) {
-    console.error('Error loading recipes:', error);
+    console.error('RecipeList: Error loading recipes:', error);
     return (
       <Container maxWidth="lg">
         <Alert severity="error">
@@ -33,6 +38,8 @@ const RecipeList = () => {
       </Container>
     );
   }
+
+  console.log('RecipeList: Rendering recipes, count:', recipes.length);
 
   return (
     <Container maxWidth="lg">

@@ -30,6 +30,16 @@ const upload = multer({
   }
 });
 
+// @route   GET api/recipes
+// @desc    Get all recipes with pagination
+// @access  Public
+router.get('/', recipeController.getAllRecipes);
+
+// @route   GET api/recipes/:id
+// @desc    Get recipe by ID
+// @access  Public
+router.get('/:id', recipeController.getRecipeById);
+
 // @route   POST api/recipes
 // @desc    Create a recipe
 // @access  Private
@@ -51,16 +61,6 @@ router.post(
   ],
   recipeController.createRecipe
 );
-
-// @route   GET api/recipes
-// @desc    Get all recipes with pagination
-// @access  Public
-router.get('/', recipeController.getAllRecipes);
-
-// @route   GET api/recipes/:id
-// @desc    Get recipe by ID
-// @access  Public
-router.get('/:id', recipeController.getRecipeById);
 
 // @route   PUT api/recipes/:id
 // @desc    Update a recipe
@@ -132,5 +132,19 @@ router.get('/trending', recipeController.getTrendingRecipes);
 // @desc    Get feed recipes for authenticated user with pagination
 // @access  Private
 router.get('/feed', auth, recipeController.getFeedRecipes);
+
+// @route   POST api/recipes/comment/:id
+// @desc    Add a comment to a recipe
+// @access  Private
+router.post(
+  '/comment/:id',
+  [
+    auth,
+    [
+      check('text', 'Comment text is required').not().isEmpty()
+    ]
+  ],
+  recipeController.commentRecipe
+);
 
 module.exports = router;

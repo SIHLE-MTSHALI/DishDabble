@@ -26,12 +26,14 @@ const API_URL = process.env.REACT_APP_API_URL;
 // Get all recipes with pagination
 export const getRecipes = (page = 1, limit = 10) => async dispatch => {
   try {
-    console.log(`Fetching recipes: page ${page}, limit ${limit}`);
+    console.log(`getRecipes: Fetching recipes - page ${page}, limit ${limit}`);
+    console.log(`getRecipes: API URL - ${API_URL}/api/recipes?page=${page}&limit=${limit}`);
+    
     const res = await axios.get(`${API_URL}/api/recipes?page=${page}&limit=${limit}`);
-    console.log('API response:', res.data);
+    console.log('getRecipes: API response:', res.data);
 
     if (!res.data || !Array.isArray(res.data.recipes)) {
-      console.error('Invalid data structure received from API:', res.data);
+      console.error('getRecipes: Invalid data structure received from API:', res.data);
       throw new Error('Invalid data structure received from API');
     }
 
@@ -40,9 +42,10 @@ export const getRecipes = (page = 1, limit = 10) => async dispatch => {
       payload: res.data
     });
 
-    console.log('Recipes dispatched to store');
+    console.log('getRecipes: Recipes dispatched to store');
   } catch (err) {
-    console.error('Error fetching recipes:', err);
+    console.error('getRecipes: Error fetching recipes:', err);
+    console.error('getRecipes: Error details:', err.response);
     dispatch({
       type: RECIPE_ERROR,
       payload: { 

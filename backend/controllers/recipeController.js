@@ -40,11 +40,16 @@ exports.createRecipe = async (req, res) => {
 
 exports.getAllRecipes = async (req, res) => {
   try {
+    console.log('getAllRecipes: Fetching recipes');
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const startIndex = (page - 1) * limit;
 
+    console.log(`getAllRecipes: Page ${page}, Limit ${limit}, StartIndex ${startIndex}`);
+
     const totalRecipes = await Recipe.countDocuments();
+    console.log(`getAllRecipes: Total recipes in database: ${totalRecipes}`);
+
     const recipes = await Recipe.find()
       .populate('user', ['name', 'avatar'])
       .sort({ createdAt: -1 })
@@ -327,10 +332,13 @@ exports.getUserRecipes = async (req, res) => {
 
 exports.searchRecipes = async (req, res) => {
   try {
+    console.log('searchRecipes: Searching for recipes');
     const { term } = req.query;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const startIndex = (page - 1) * limit;
+
+    console.log(`searchRecipes: Term: ${term}, Page ${page}, Limit ${limit}, StartIndex ${startIndex}`);
 
     const query = {
       $or: [
@@ -342,6 +350,8 @@ exports.searchRecipes = async (req, res) => {
     };
 
     const totalRecipes = await Recipe.countDocuments(query);
+    console.log(`searchRecipes: Total matching recipes: ${totalRecipes}`);
+
     const recipes = await Recipe.find(query)
       .populate('user', ['name', 'avatar'])
       .sort({ createdAt: -1 })
@@ -350,6 +360,8 @@ exports.searchRecipes = async (req, res) => {
 
     const hasMore = startIndex + recipes.length < totalRecipes;
 
+    console.log(`searchRecipes: Found ${recipes.length} recipes`);
+
     res.json({
       recipes,
       hasMore,
@@ -357,18 +369,23 @@ exports.searchRecipes = async (req, res) => {
       totalPages: Math.ceil(totalRecipes / limit)
     });
   } catch (err) {
-    console.error(err.message);
+    console.error('searchRecipes: Error:', err.message);
     res.status(500).send('Server Error');
   }
 };
 
 exports.getTrendingRecipes = async (req, res) => {
   try {
+    console.log('getTrendingRecipes: Fetching trending recipes');
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const startIndex = (page - 1) * limit;
 
+    console.log(`getTrendingRecipes: Page ${page}, Limit ${limit}, StartIndex ${startIndex}`);
+
     const totalRecipes = await Recipe.countDocuments();
+    console.log(`getTrendingRecipes: Total recipes: ${totalRecipes}`);
+
     const recipes = await Recipe.find()
       .sort({ likes: -1, saves: -1, createdAt: -1 })
       .populate('user', ['name', 'avatar'])
@@ -377,6 +394,8 @@ exports.getTrendingRecipes = async (req, res) => {
 
     const hasMore = startIndex + recipes.length < totalRecipes;
 
+    console.log(`getTrendingRecipes: Found ${recipes.length} trending recipes`);
+
     res.json({
       recipes,
       hasMore,
@@ -384,22 +403,29 @@ exports.getTrendingRecipes = async (req, res) => {
       totalPages: Math.ceil(totalRecipes / limit)
     });
   } catch (err) {
-    console.error(err.message);
+    console.error('getTrendingRecipes: Error:', err.message);
     res.status(500).send('Server Error');
   }
 };
 
 exports.getFeedRecipes = async (req, res) => {
   try {
+    console.log('getFeedRecipes: Fetching feed recipes');
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const startIndex = (page - 1) * limit;
+
+    console.log(`getFeedRecipes: Page ${page}, Limit ${limit}, StartIndex ${startIndex}`);
 
     // Get the list of users that the current user follows
     const user = await User.findById(req.user.id);
     const following = user.following;
 
+    console.log(`getFeedRecipes: User is following ${following.length} users`);
+
     const totalRecipes = await Recipe.countDocuments({ user: { $in: following } });
+    console.log(`getFeedRecipes: Total feed recipes: ${totalRecipes}`);
+
     const recipes = await Recipe.find({ user: { $in: following } })
       .sort({ createdAt: -1 })
       .populate('user', ['name', 'avatar'])
@@ -408,6 +434,8 @@ exports.getFeedRecipes = async (req, res) => {
 
     const hasMore = startIndex + recipes.length < totalRecipes;
 
+    console.log(`getFeedRecipes: Found ${recipes.length} feed recipes`);
+
     res.json({
       recipes,
       hasMore,
@@ -415,7 +443,7 @@ exports.getFeedRecipes = async (req, res) => {
       totalPages: Math.ceil(totalRecipes / limit)
     });
   } catch (err) {
-    console.error(err.message);
+    console.error('getFeedRecipes: Error:', err.message);
     res.status(500).send('Server Error');
   }
 };

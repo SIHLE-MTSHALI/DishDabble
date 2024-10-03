@@ -130,6 +130,20 @@ app.get('/api/recipes/search', async (req, res) => {
   }
 });
 
+// Database population route (for development only)
+if (process.env.NODE_ENV === 'development') {
+  app.post('/api/populate-db', async (req, res) => {
+    try {
+      const { populateDatabase } = require('./dataGenerator');
+      await populateDatabase(50, 100); // Generate 50 users and 100 recipes
+      res.json({ message: 'Database populated successfully' });
+    } catch (error) {
+      console.error('Error populating database:', error);
+      res.status(500).json({ error: 'Failed to populate database' });
+    }
+  });
+}
+
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {

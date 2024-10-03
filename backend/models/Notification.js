@@ -8,7 +8,7 @@ const NotificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['like', 'comment', 'follow'],
+    enum: ['like', 'comment', 'follow', 'save'],
     required: true
   },
   recipe: {
