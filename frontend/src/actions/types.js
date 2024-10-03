@@ -43,6 +43,9 @@ export const UNFOLLOW_USER = 'UNFOLLOW_USER';
 export const UPDATE_FOLLOWERS = 'UPDATE_FOLLOWERS';
 export const GET_RANDOM_USERS = 'GET_RANDOM_USERS';
 export const USER_ERROR = 'USER_ERROR';
+export const GET_USER_PROFILE = 'GET_USER_PROFILE';
+export const GET_FOLLOWERS = 'GET_FOLLOWERS';
+export const GET_FOLLOWING = 'GET_FOLLOWING';
 
 // Tags
 export const GET_RANDOM_TAGS = 'GET_RANDOM_TAGS';

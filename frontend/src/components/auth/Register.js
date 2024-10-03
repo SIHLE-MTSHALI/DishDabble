@@ -7,12 +7,13 @@ import { TextField, Button, Typography, Container, Box } from '@mui/material';
 const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
+    username: '',
     email: '',
     password: '',
     password2: ''
   });
 
-  const { name, email, password, password2 } = formData;
+  const { name, username, email, password, password2 } = formData;
   const dispatch = useDispatch();
 
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -23,9 +24,9 @@ const Register = () => {
       dispatch(setAlert('Passwords do not match', 'error'));
       console.log('Passwords do not match');
     } else {
-      console.log('Attempting to register with:', { name, email, password });
+      console.log('Attempting to register with:', { name, username, email, password });
       try {
-        await dispatch(register({ name, email, password }));
+        await dispatch(register({ name, username, email, password }));
         console.log('Registration successful');
       } catch (error) {
         console.error('Registration failed:', error);
@@ -58,6 +59,17 @@ const Register = () => {
             autoComplete="name"
             autoFocus
             value={name}
+            onChange={onChange}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="username"
+            label="Username"
+            name="username"
+            autoComplete="username"
+            value={username}
             onChange={onChange}
           />
           <TextField

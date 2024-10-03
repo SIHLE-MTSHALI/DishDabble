@@ -55,4 +55,14 @@ router.put('/profile', auth, userController.updateUserProfile);
 // @access  Public
 router.get('/random', userController.getRandomUsers);
 
+// @route   GET api/users/:id/followers
+// @desc    Get user's followers
+// @access  Public
+router.get('/:id/followers', userController.getUserFollowers);
+
+// @route   GET api/users/:id/following
+// @desc    Get users that a user is following
+// @access  Public
+router.get('/:id/following', userController.getUserFollowing);
+
 module.exports = router;

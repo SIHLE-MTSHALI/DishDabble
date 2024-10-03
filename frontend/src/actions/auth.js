@@ -50,16 +50,16 @@ export const loadUser = () => async dispatch => {
 };
 
 // Register User
-export const register = ({ name, email, password }) => async dispatch => {
+export const register = ({ name, username, email, password }) => async dispatch => {
   const config = {
     headers: {
       'Content-Type': 'application/json'
     }
   };
 
-  const body = JSON.stringify({ name, email, password });
+  const body = JSON.stringify({ name, username, email, password });
 
-  console.log('Attempting to register user:', { name, email });
+  console.log('Attempting to register user:', { name, username, email });
   console.log('API URL:', `${API_URL}/api/users`);
 
   try {

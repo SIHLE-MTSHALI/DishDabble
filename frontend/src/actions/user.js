@@ -4,6 +4,9 @@ import {
   UNFOLLOW_USER,
   UPDATE_FOLLOWERS,
   GET_RANDOM_USERS,
+  GET_USER_PROFILE,
+  GET_FOLLOWERS,
+  GET_FOLLOWING,
   USER_ERROR
 } from './types';
 
@@ -16,7 +19,7 @@ export const followUser = (userId) => async (dispatch) => {
 
     dispatch({
       type: FOLLOW_USER,
-      payload: { userId, followers: res.data.followers }
+      payload: { userId, followers: res.data.followers, following: res.data.following }
     });
   } catch (err) {
     dispatch({
@@ -33,7 +36,7 @@ export const unfollowUser = (userId) => async (dispatch) => {
 
     dispatch({
       type: UNFOLLOW_USER,
-      payload: { userId, followers: res.data.followers }
+      payload: { userId, followers: res.data.followers, following: res.data.following }
     });
   } catch (err) {
     dispatch({
@@ -56,6 +59,57 @@ export const getRandomUsers = (limit = 10) => async (dispatch) => {
 
     dispatch({
       type: GET_RANDOM_USERS,
+      payload: res.data
+    });
+  } catch (err) {
+    dispatch({
+      type: USER_ERROR,
+      payload: { msg: err.response.statusText, status: err.response.status }
+    });
+  }
+};
+
+// Get user profile
+export const getUserProfile = (username) => async (dispatch) => {
+  try {
+    const res = await axios.get(`${API_URL}/api/users/profile/${username}`);
+
+    dispatch({
+      type: GET_USER_PROFILE,
+      payload: res.data
+    });
+  } catch (err) {
+    dispatch({
+      type: USER_ERROR,
+      payload: { msg: err.response.statusText, status: err.response.status }
+    });
+  }
+};
+
+// Get user's followers
+export const getFollowers = (userId) => async (dispatch) => {
+  try {
+    const res = await axios.get(`${API_URL}/api/users/${userId}/followers`);
+
+    dispatch({
+      type: GET_FOLLOWERS,
+      payload: res.data
+    });
+  } catch (err) {
+    dispatch({
+      type: USER_ERROR,
+      payload: { msg: err.response.statusText, status: err.response.status }
+    });
+  }
+};
+
+// Get user's following
+export const getFollowing = (userId) => async (dispatch) => {
+  try {
+    const res = await axios.get(`${API_URL}/api/users/${userId}/following`);
+
+    dispatch({
+      type: GET_FOLLOWING,
       payload: res.data
     });
   } catch (err) {

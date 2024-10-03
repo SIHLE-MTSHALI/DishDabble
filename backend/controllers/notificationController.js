@@ -3,14 +3,23 @@ const Notification = require('../models/Notification');
 // Get all notifications for the authenticated user
 exports.getNotifications = async (req, res) => {
   try {
+    console.log('Fetching notifications for user:', req.user.id);
+    
+    if (!req.user || !req.user.id) {
+      console.error('User not authenticated or user ID missing');
+      return res.status(401).json({ msg: 'User not authenticated' });
+    }
+
     const notifications = await Notification.find({ user: req.user.id })
       .sort({ createdAt: -1 })
       .populate('sender', 'username')
       .populate('recipe', 'title');
 
+    console.log(`Retrieved ${notifications.length} notifications for user ${req.user.id}`);
+
     res.json(notifications);
   } catch (err) {
-    console.error(err.message);
+    console.error('Error in getNotifications:', err.message);
     res.status(500).send('Server Error');
   }
 };
@@ -71,3 +80,5 @@ exports.deleteAllNotifications = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+module.exports = exports;

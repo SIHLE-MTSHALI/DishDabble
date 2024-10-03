@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Recipe = require('../models/Recipe');
 const notificationController = require('./notificationController');
+const mongoose = require('mongoose');
 
 // @route   GET api/auth
 // @desc    Get authenticated user
@@ -85,18 +86,24 @@ exports.registerUser = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { name, email, password } = req.body;
+  const { name, username, email, password } = req.body;
 
   try {
     let user = await User.findOne({ email });
-
     if (user) {
       console.log('User already exists:', email);
-      return res.status(400).json({ errors: [{ msg: 'User already exists' }] });
+      return res.status(400).json({ errors: [{ msg: 'Email already in use' }] });
+    }
+
+    user = await User.findOne({ username });
+    if (user) {
+      console.log('Username already exists:', username);
+      return res.status(400).json({ errors: [{ msg: 'Username already taken' }] });
     }
 
     user = new User({
       name,
+      username,
       email,
       password
     });
@@ -265,9 +272,15 @@ exports.unfollowUser = async (req, res) => {
 // @desc    Get user profile
 // @access  Public
 exports.getUserProfile = async (req, res) => {
-  console.log('Fetching user profile for username:', req.params.username);
+  console.log('Fetching user profile for:', req.params.username);
   try {
-    const user = await User.findOne({ username: req.params.username }).select('-password');
+    // First, try to find the user by username
+    let user = await User.findOne({ username: req.params.username }).select('-password');
+
+    // If user is not found by username, check if it's a valid ObjectId and try to find by ID
+    if (!user && mongoose.Types.ObjectId.isValid(req.params.username)) {
+      user = await User.findById(req.params.username).select('-password');
+    }
 
     if (!user) {
       console.log('User not found:', req.params.username);
@@ -330,8 +343,10 @@ exports.getRandomUsers = async (req, res) => {
     const randomUsers = await User.aggregate([
       { $sample: { size: limit } },
       { $project: {
-          password: 0,
-          email: 0
+          _id: 1,
+          name: 1,
+          username: 1,
+          avatar: 1
         }
       }
     ]);
@@ -341,6 +356,48 @@ exports.getRandomUsers = async (req, res) => {
     res.json(randomUsers);
   } catch (err) {
     console.error('getRandomUsers: Error:', err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+// @route   GET api/users/:id/followers
+// @desc    Get user's followers
+// @access  Public
+exports.getUserFollowers = async (req, res) => {
+  console.log(`Fetching followers for user ${req.params.id}`);
+  try {
+    const user = await User.findById(req.params.id).populate('followers', 'name avatar username');
+
+    if (!user) {
+      console.log('User not found:', req.params.id);
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    console.log(`Retrieved ${user.followers.length} followers for user ${user.id}`);
+    res.json(user.followers);
+  } catch (err) {
+    console.error('Error in getUserFollowers:', err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+// @route   GET api/users/:id/following
+// @desc    Get users that a user is following
+// @access  Public
+exports.getUserFollowing = async (req, res) => {
+  console.log(`Fetching following list for user ${req.params.id}`);
+  try {
+    const user = await User.findById(req.params.id).populate('following', 'name avatar username');
+
+    if (!user) {
+      console.log('User not found:', req.params.id);
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    console.log(`Retrieved ${user.following.length} users that user ${user.id} is following`);
+    res.json(user.following);
+  } catch (err) {
+    console.error('Error in getUserFollowing:', err.message);
     res.status(500).send('Server Error');
   }
 };

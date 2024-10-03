@@ -386,11 +386,38 @@ exports.getTrendingRecipes = async (req, res) => {
     const totalRecipes = await Recipe.countDocuments();
     console.log(`getTrendingRecipes: Total recipes: ${totalRecipes}`);
 
-    const recipes = await Recipe.find()
-      .sort({ likes: -1, saves: -1, createdAt: -1 })
-      .populate('user', ['name', 'avatar'])
-      .skip(startIndex)
-      .limit(limit);
+    const recipes = await Recipe.aggregate([
+      {
+        $addFields: {
+          likesCount: { $size: "$likes" },
+          savesCount: { $size: "$saves" }
+        }
+      },
+      {
+        $sort: {
+          likesCount: -1,
+          savesCount: -1,
+          createdAt: -1
+        }
+      },
+      { $skip: startIndex },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          'user.password': 0,
+          'user.email': 0
+        }
+      }
+    ]);
 
     const hasMore = startIndex + recipes.length < totalRecipes;
 
