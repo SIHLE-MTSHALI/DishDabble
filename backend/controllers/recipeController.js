@@ -485,4 +485,40 @@ exports.commentRecipe = async (req, res) => {
   }
 };
 
+exports.getRandomRecipes = async (req, res) => {
+  try {
+    console.log('getRandomRecipes: Fetching random recipes');
+    const limit = parseInt(req.query.limit) || 10;
+
+    console.log(`getRandomRecipes: Limit ${limit}`);
+
+    const totalRecipes = await Recipe.countDocuments();
+    console.log(`getRandomRecipes: Total recipes: ${totalRecipes}`);
+
+    const randomRecipes = await Recipe.aggregate([
+      { $sample: { size: limit } },
+      { $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      { $project: {
+          'user.password': 0,
+          'user.email': 0
+        }
+      }
+    ]);
+
+    console.log(`getRandomRecipes: Found ${randomRecipes.length} random recipes`);
+
+    res.json(randomRecipes);
+  } catch (err) {
+    console.error('getRandomRecipes: Error:', err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
 module.exports = exports;

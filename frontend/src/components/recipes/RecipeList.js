@@ -1,27 +1,11 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { getRecipes } from '../../actions/recipe';
+import React from 'react';
+import PropTypes from 'prop-types';
 import RecipePost from './RecipePost';
 import Spinner from '../layout/Spinner';
 import { Grid, Typography, Container, Alert } from '@mui/material';
 
-const RecipeList = () => {
-  const dispatch = useDispatch();
-  const { recipes, loading, error } = useSelector(state => state.recipe);
-
-  useEffect(() => {
-    console.log('RecipeList: Dispatching getRecipes action');
-    dispatch(getRecipes());
-  }, [dispatch]);
-
-  useEffect(() => {
-    console.log('RecipeList: Recipes state updated', recipes);
-    if (recipes.length > 0) {
-      console.log('Recipes loaded:', recipes);
-    } else {
-      console.log('No recipes loaded');
-    }
-  }, [recipes]);
+const RecipeList = ({ recipes, loading, error, title = 'Recipes' }) => {
+  console.log('RecipeList: Rendering with props:', { recipes, loading, error, title });
 
   if (loading) {
     console.log('RecipeList: Loading...');
@@ -29,11 +13,11 @@ const RecipeList = () => {
   }
 
   if (error) {
-    console.error('RecipeList: Error loading recipes:', error);
+    console.error('RecipeList: Error:', error);
     return (
       <Container maxWidth="lg">
         <Alert severity="error">
-          Error loading recipes: {error.msg}
+          Error loading recipes: {error.msg || 'Unknown error'}
         </Alert>
       </Container>
     );
@@ -44,7 +28,7 @@ const RecipeList = () => {
   return (
     <Container maxWidth="lg">
       <Typography variant="h2" component="h1" gutterBottom>
-        Recipes
+        {title}
       </Typography>
       {recipes.length === 0 ? (
         <Typography>No recipes found.</Typography>
@@ -69,6 +53,13 @@ const RecipeList = () => {
       )}
     </Container>
   );
+};
+
+RecipeList.propTypes = {
+  recipes: PropTypes.array.isRequired,
+  loading: PropTypes.bool,
+  error: PropTypes.object,
+  title: PropTypes.string
 };
 
 export default RecipeList;

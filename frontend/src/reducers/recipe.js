@@ -15,7 +15,8 @@ import {
   GET_FEED_RECIPES,
   UPDATE_RECIPE_LIKES,
   UPDATE_RECIPE_COMMENTS,
-  GET_MORE_RECIPES
+  GET_MORE_RECIPES,
+  GET_RANDOM_RECIPES
 } from '../actions/types';
 
 const initialState = {
@@ -23,8 +24,9 @@ const initialState = {
   recipe: null,
   trendingRecipes: [],
   feedRecipes: [],
+  randomRecipes: [],
   loading: true,
-  error: {},
+  error: null,
   hasMore: true,
   page: 1
 };
@@ -42,7 +44,8 @@ const recipeReducer = (state = initialState, action) => {
         recipes: payload.recipes,
         hasMore: payload.hasMore,
         page: payload.currentPage,
-        loading: false
+        loading: false,
+        error: null
       };
     case GET_MORE_RECIPES:
       return {
@@ -50,19 +53,29 @@ const recipeReducer = (state = initialState, action) => {
         recipes: [...state.recipes, ...payload.recipes],
         hasMore: payload.hasMore,
         page: payload.currentPage,
-        loading: false
+        loading: false,
+        error: null
+      };
+    case GET_RANDOM_RECIPES:
+      return {
+        ...state,
+        randomRecipes: payload,
+        loading: false,
+        error: null
       };
     case GET_RECIPE:
       return {
         ...state,
         recipe: payload,
-        loading: false
+        loading: false,
+        error: null
       };
     case ADD_RECIPE:
       return {
         ...state,
         recipes: [payload, ...state.recipes],
-        loading: false
+        loading: false,
+        error: null
       };
     case UPDATE_RECIPE:
       return {
@@ -71,13 +84,15 @@ const recipeReducer = (state = initialState, action) => {
           recipe._id === payload._id ? payload : recipe
         ),
         recipe: payload,
-        loading: false
+        loading: false,
+        error: null
       };
     case DELETE_RECIPE:
       return {
         ...state,
         recipes: state.recipes.filter(recipe => recipe._id !== payload),
-        loading: false
+        loading: false,
+        error: null
       };
     case LIKE_RECIPE:
     case UNLIKE_RECIPE:
@@ -87,10 +102,14 @@ const recipeReducer = (state = initialState, action) => {
         recipes: state.recipes.map(recipe =>
           recipe._id === payload.id ? { ...recipe, likes: payload.likes } : recipe
         ),
+        randomRecipes: state.randomRecipes.map(recipe =>
+          recipe._id === payload.id ? { ...recipe, likes: payload.likes } : recipe
+        ),
         recipe: state.recipe && state.recipe._id === payload.id
           ? { ...state.recipe, likes: payload.likes }
           : state.recipe,
-        loading: false
+        loading: false,
+        error: null
       };
     case SAVE_RECIPE:
     case UNSAVE_RECIPE:
@@ -99,10 +118,14 @@ const recipeReducer = (state = initialState, action) => {
         recipes: state.recipes.map(recipe =>
           recipe._id === payload.id ? { ...recipe, saves: payload.saves } : recipe
         ),
+        randomRecipes: state.randomRecipes.map(recipe =>
+          recipe._id === payload.id ? { ...recipe, saves: payload.saves } : recipe
+        ),
         recipe: state.recipe && state.recipe._id === payload.id
           ? { ...state.recipe, saves: payload.saves }
           : state.recipe,
-        loading: false
+        loading: false,
+        error: null
       };
     case RATE_RECIPE:
       return {
@@ -110,10 +133,14 @@ const recipeReducer = (state = initialState, action) => {
         recipes: state.recipes.map(recipe =>
           recipe._id === payload.id ? { ...recipe, ratings: payload.ratings } : recipe
         ),
+        randomRecipes: state.randomRecipes.map(recipe =>
+          recipe._id === payload.id ? { ...recipe, ratings: payload.ratings } : recipe
+        ),
         recipe: state.recipe && state.recipe._id === payload.id
           ? { ...state.recipe, ratings: payload.ratings }
           : state.recipe,
-        loading: false
+        loading: false,
+        error: null
       };
     case UPDATE_RECIPE_COMMENTS:
       return {
@@ -121,10 +148,14 @@ const recipeReducer = (state = initialState, action) => {
         recipes: state.recipes.map(recipe =>
           recipe._id === payload.id ? { ...recipe, comments: payload.comments } : recipe
         ),
+        randomRecipes: state.randomRecipes.map(recipe =>
+          recipe._id === payload.id ? { ...recipe, comments: payload.comments } : recipe
+        ),
         recipe: state.recipe && state.recipe._id === payload.id
           ? { ...state.recipe, comments: payload.comments }
           : state.recipe,
-        loading: false
+        loading: false,
+        error: null
       };
     case RECIPE_ERROR:
       return {

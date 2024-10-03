@@ -107,6 +107,7 @@ app.use('/api/users', require('./routes/api/users'));
 app.use('/api/auth', require('./routes/api/auth'));
 app.use('/api/recipes', require('./routes/api/recipes'));
 app.use('/api/notifications', require('./routes/api/notifications'));
+app.use('/api/tags', require('./routes/api/tags')); // New tags route
 
 // Search route
 app.get('/api/recipes/search', async (req, res) => {

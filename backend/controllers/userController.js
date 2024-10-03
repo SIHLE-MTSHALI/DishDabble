@@ -314,4 +314,35 @@ exports.updateUserProfile = async (req, res) => {
   }
 };
 
+// @route   GET api/users/random
+// @desc    Get random users
+// @access  Public
+exports.getRandomUsers = async (req, res) => {
+  console.log('Fetching random users');
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+
+    console.log(`getRandomUsers: Limit ${limit}`);
+
+    const totalUsers = await User.countDocuments();
+    console.log(`getRandomUsers: Total users: ${totalUsers}`);
+
+    const randomUsers = await User.aggregate([
+      { $sample: { size: limit } },
+      { $project: {
+          password: 0,
+          email: 0
+        }
+      }
+    ]);
+
+    console.log(`getRandomUsers: Found ${randomUsers.length} random users`);
+
+    res.json(randomUsers);
+  } catch (err) {
+    console.error('getRandomUsers: Error:', err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
 module.exports = exports;

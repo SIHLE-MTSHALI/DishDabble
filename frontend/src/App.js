@@ -18,6 +18,8 @@ import Alert from './components/layout/Alert';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import ExplorePage from './pages/ExplorePage';
+import SearchPage from './pages/SearchPage';
+import TrendingPage from './pages/TrendingPage';
 import NotificationsPage from './pages/NotificationsPage';
 import Register from './components/auth/Register';
 import Login from './components/auth/Login';
@@ -86,6 +88,8 @@ function App() {
               <Route element={<PrivateRoute />}>
                 <Route path="/home" element={<HomePage />} />
                 <Route path="/explore" element={<ExplorePage />} />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/trending" element={<TrendingPage />} />
                 <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/recipe/:id" element={<RecipeDetail />} />
                 <Route path="/create-recipe" element={<RecipeForm />} />

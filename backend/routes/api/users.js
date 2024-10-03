@@ -50,4 +50,9 @@ router.get('/profile/:username', userController.getUserProfile);
 // @access  Private
 router.put('/profile', auth, userController.updateUserProfile);
 
+// @route   GET api/users/random
+// @desc    Get random users
+// @access  Public
+router.get('/random', userController.getRandomUsers);
+
 module.exports = router;

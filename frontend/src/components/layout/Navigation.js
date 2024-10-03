@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { AppBar, Toolbar, Typography, Button, Box, IconButton, Badge } from '@mui/material';
-import { Home, Explore, AddCircleOutline, Notifications, AccountCircle } from '@mui/icons-material';
+import { AppBar, Toolbar, Typography, Button, Box, Badge } from '@mui/material';
+import { Home, Explore, Search, TrendingUp, AddCircleOutline, Notifications, AccountCircle } from '@mui/icons-material';
 import { logout } from '../../actions/auth';
 
 const Navigation = () => {
@@ -22,26 +22,34 @@ const Navigation = () => {
         <Typography variant="h6" component={RouterLink} to="/" sx={{ flexGrow: 1, textDecoration: 'none', color: 'inherit' }}>
           DishDabble
         </Typography>
-        <Box>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {isAuthenticated ? (
             <>
-              <IconButton color="inherit" component={RouterLink} to="/home">
-                <Home />
-              </IconButton>
-              <IconButton color="inherit" component={RouterLink} to="/explore">
-                <Explore />
-              </IconButton>
-              <IconButton color="inherit" component={RouterLink} to="/create-recipe">
-                <AddCircleOutline />
-              </IconButton>
-              <IconButton color="inherit" component={RouterLink} to="/notifications">
+              <Button color="inherit" component={RouterLink} to="/home" startIcon={<Home />}>
+                Home
+              </Button>
+              <Button color="inherit" component={RouterLink} to="/explore" startIcon={<Explore />}>
+                Explore
+              </Button>
+              <Button color="inherit" component={RouterLink} to="/search" startIcon={<Search />}>
+                Search
+              </Button>
+              <Button color="inherit" component={RouterLink} to="/trending" startIcon={<TrendingUp />}>
+                Trending
+              </Button>
+              <Button color="inherit" component={RouterLink} to="/create-recipe" startIcon={<AddCircleOutline />}>
+                Create
+              </Button>
+              <Button color="inherit" component={RouterLink} to="/notifications" startIcon={
                 <Badge badgeContent={unreadNotificationsCount} color="secondary">
                   <Notifications />
                 </Badge>
-              </IconButton>
-              <IconButton color="inherit" component={RouterLink} to="/profile">
-                <AccountCircle />
-              </IconButton>
+              }>
+                Notifications
+              </Button>
+              <Button color="inherit" component={RouterLink} to="/profile" startIcon={<AccountCircle />}>
+                Profile
+              </Button>
               <Button color="inherit" onClick={handleLogout}>
                 Logout
               </Button>

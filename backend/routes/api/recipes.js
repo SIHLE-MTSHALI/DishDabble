@@ -35,6 +35,31 @@ const upload = multer({
 // @access  Public
 router.get('/', recipeController.getAllRecipes);
 
+// @route   GET api/recipes/random
+// @desc    Get random recipes
+// @access  Public
+router.get('/random', recipeController.getRandomRecipes);
+
+// @route   GET api/recipes/search
+// @desc    Search recipes with pagination
+// @access  Public
+router.get('/search', recipeController.searchRecipes);
+
+// @route   GET api/recipes/trending
+// @desc    Get trending recipes with pagination
+// @access  Public
+router.get('/trending', recipeController.getTrendingRecipes);
+
+// @route   GET api/recipes/feed
+// @desc    Get feed recipes for authenticated user with pagination
+// @access  Private
+router.get('/feed', auth, recipeController.getFeedRecipes);
+
+// @route   GET api/recipes/user/:userId
+// @desc    Get recipes by user ID with pagination
+// @access  Public
+router.get('/user/:userId', recipeController.getUserRecipes);
+
 // @route   GET api/recipes/:id
 // @desc    Get recipe by ID
 // @access  Public
@@ -112,26 +137,6 @@ router.post(
   ],
   recipeController.rateRecipe
 );
-
-// @route   GET api/recipes/user/:userId
-// @desc    Get recipes by user ID with pagination
-// @access  Public
-router.get('/user/:userId', recipeController.getUserRecipes);
-
-// @route   GET api/recipes/search
-// @desc    Search recipes with pagination
-// @access  Public
-router.get('/search', recipeController.searchRecipes);
-
-// @route   GET api/recipes/trending
-// @desc    Get trending recipes with pagination
-// @access  Public
-router.get('/trending', recipeController.getTrendingRecipes);
-
-// @route   GET api/recipes/feed
-// @desc    Get feed recipes for authenticated user with pagination
-// @access  Private
-router.get('/feed', auth, recipeController.getFeedRecipes);
 
 // @route   POST api/recipes/comment/:id
 // @desc    Add a comment to a recipe
