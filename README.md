@@ -9,7 +9,7 @@ DishDabble is the result of a collaborative effort between two passionate develo
 - Sihle Mtshali
 - Xola Mthembu
 
-We've combined our skills and creativity to bring you this exciting platform for culinary exploration and sharing.
+We've combined our skills and creativity to bring you this exciting platform for culinary exploration and sharing. For more information about the contributors, please check the AUTHORS file in the root directory of the project.
 
 ## Features
 
@@ -46,6 +46,8 @@ The project is organized into two main directories:
 - `models/`: Defines the data models for MongoDB
 - `routes/`: Sets up the API routes
 - `server.js`: The main entry point for the backend
+- `dataGenerator.js`: A script to generate sample data for testing and development
+- `checkUsersWithoutUsernames.js`: A utility script to check and update users without usernames
 
 ### Frontend
 
@@ -118,6 +120,37 @@ Here's a brief overview of some key components we've implemented:
 
 To help with testing and development, we've included a `dataGenerator.js` script in the backend. This script can populate the database with sample recipes, users, and tags.
 
+### Running the Data Generator
+
+To run the data generator, follow these steps:
+
+1. Ensure your MongoDB server is running and the connection string in your `.env` file is correct.
+
+2. Navigate to the backend directory:
+   ```
+   cd backend
+   ```
+
+3. Run the data generator script:
+   ```
+   node dataGenerator.js
+   ```
+
+4. The script will start generating data and you'll see progress messages in the console.
+
+### What to Expect
+
+After running the data generator script:
+
+- The script will create a number of sample users, recipes, and tags in your database.
+- You'll see console output indicating the progress, such as "Created X users", "Created Y recipes", etc.
+- Once complete, the script will output a summary of the data generated.
+- You can now log in to the application using any of the generated user accounts. The default password for all generated users is "password123".
+- The generated data will include a variety of recipes with different ingredients, cooking times, and difficulty levels, as well as associated tags.
+- User profiles will have random followers and following relationships established.
+
+This generated data provides a realistic starting point for testing and development, allowing you to immediately explore the full functionality of DishDabble without having to manually create content.
+
 ## Notifications
 
 We've implemented a notification system to keep users engaged. The `notificationController.js` handles creating and managing notifications for various user interactions.
@@ -135,6 +168,9 @@ As with any project, there's always room for improvement. Here are some areas we
 3. Integrate with external APIs for nutritional information
 4. Implement a recommendation system based on user preferences
 5. Add social media sharing capabilities
+6. Enhance real-time features using Socket.io
+7. Implement a chat system for users to discuss recipes
+8. Add a feature for users to create and share cooking videos
 
 ## Contributing
 
