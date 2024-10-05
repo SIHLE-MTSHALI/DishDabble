@@ -131,6 +131,9 @@ export const login = (email, password) => async dispatch => {
 
     dispatch(loadUser());
     console.log('Dispatched loadUser');
+
+    // Redirect to homepage after successful login
+    window.location.href = '/';
   } catch (err) {
     console.error('Login error:', err.response ? err.response.data : err.message);
 

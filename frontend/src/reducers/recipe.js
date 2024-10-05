@@ -37,11 +37,27 @@ const recipeReducer = (state = initialState, action) => {
   switch (type) {
     case GET_RECIPES:
     case SEARCH_RECIPES:
-    case GET_TRENDING_RECIPES:
-    case GET_FEED_RECIPES:
       return {
         ...state,
         recipes: payload.recipes,
+        hasMore: payload.hasMore,
+        page: payload.currentPage,
+        loading: false,
+        error: null
+      };
+    case GET_TRENDING_RECIPES:
+      return {
+        ...state,
+        trendingRecipes: payload.recipes,
+        hasMore: payload.hasMore,
+        page: payload.currentPage,
+        loading: false,
+        error: null
+      };
+    case GET_FEED_RECIPES:
+      return {
+        ...state,
+        feedRecipes: payload.recipes,
         hasMore: payload.hasMore,
         page: payload.currentPage,
         loading: false,
@@ -83,6 +99,12 @@ const recipeReducer = (state = initialState, action) => {
         recipes: state.recipes.map(recipe =>
           recipe._id === payload._id ? payload : recipe
         ),
+        feedRecipes: state.feedRecipes.map(recipe =>
+          recipe._id === payload._id ? payload : recipe
+        ),
+        trendingRecipes: state.trendingRecipes.map(recipe =>
+          recipe._id === payload._id ? payload : recipe
+        ),
         recipe: payload,
         loading: false,
         error: null
@@ -91,6 +113,8 @@ const recipeReducer = (state = initialState, action) => {
       return {
         ...state,
         recipes: state.recipes.filter(recipe => recipe._id !== payload),
+        feedRecipes: state.feedRecipes.filter(recipe => recipe._id !== payload),
+        trendingRecipes: state.trendingRecipes.filter(recipe => recipe._id !== payload),
         loading: false,
         error: null
       };
@@ -100,6 +124,12 @@ const recipeReducer = (state = initialState, action) => {
       return {
         ...state,
         recipes: state.recipes.map(recipe =>
+          recipe._id === payload.id ? { ...recipe, likes: payload.likes } : recipe
+        ),
+        feedRecipes: state.feedRecipes.map(recipe =>
+          recipe._id === payload.id ? { ...recipe, likes: payload.likes } : recipe
+        ),
+        trendingRecipes: state.trendingRecipes.map(recipe =>
           recipe._id === payload.id ? { ...recipe, likes: payload.likes } : recipe
         ),
         randomRecipes: state.randomRecipes.map(recipe =>
@@ -118,6 +148,12 @@ const recipeReducer = (state = initialState, action) => {
         recipes: state.recipes.map(recipe =>
           recipe._id === payload.id ? { ...recipe, saves: payload.saves } : recipe
         ),
+        feedRecipes: state.feedRecipes.map(recipe =>
+          recipe._id === payload.id ? { ...recipe, saves: payload.saves } : recipe
+        ),
+        trendingRecipes: state.trendingRecipes.map(recipe =>
+          recipe._id === payload.id ? { ...recipe, saves: payload.saves } : recipe
+        ),
         randomRecipes: state.randomRecipes.map(recipe =>
           recipe._id === payload.id ? { ...recipe, saves: payload.saves } : recipe
         ),
@@ -133,6 +169,12 @@ const recipeReducer = (state = initialState, action) => {
         recipes: state.recipes.map(recipe =>
           recipe._id === payload.id ? { ...recipe, ratings: payload.ratings } : recipe
         ),
+        feedRecipes: state.feedRecipes.map(recipe =>
+          recipe._id === payload.id ? { ...recipe, ratings: payload.ratings } : recipe
+        ),
+        trendingRecipes: state.trendingRecipes.map(recipe =>
+          recipe._id === payload.id ? { ...recipe, ratings: payload.ratings } : recipe
+        ),
         randomRecipes: state.randomRecipes.map(recipe =>
           recipe._id === payload.id ? { ...recipe, ratings: payload.ratings } : recipe
         ),
@@ -146,6 +188,12 @@ const recipeReducer = (state = initialState, action) => {
       return {
         ...state,
         recipes: state.recipes.map(recipe =>
+          recipe._id === payload.id ? { ...recipe, comments: payload.comments } : recipe
+        ),
+        feedRecipes: state.feedRecipes.map(recipe =>
+          recipe._id === payload.id ? { ...recipe, comments: payload.comments } : recipe
+        ),
+        trendingRecipes: state.trendingRecipes.map(recipe =>
           recipe._id === payload.id ? { ...recipe, comments: payload.comments } : recipe
         ),
         randomRecipes: state.randomRecipes.map(recipe =>
