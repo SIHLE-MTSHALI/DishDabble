@@ -1,65 +1,75 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Container,
   Typography,
   Box,
-  CircularProgress,
 } from '@mui/material';
-import InfiniteScroll from 'react-infinite-scroll-component';
-import RecipePost from '../components/recipes/RecipePost';
-import { getFeedRecipes } from '../actions/recipe';
-import { fadeIn } from '../styles/animations';
+import RecipeList from '../components/recipes/RecipeList';
+import { getFeedRecipes, getRandomRecipes } from '../actions/recipe';
 
 const HomePage = () => {
   const dispatch = useDispatch();
-  const { feedRecipes, loading, hasMore, page } = useSelector((state) => state.recipe);
+  const { feedRecipes, randomRecipes, loading, error } = useSelector((state) => state.recipe);
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+
+  const loadRecipes = useCallback((pageNum) => {
+    if (isAuthenticated) {
+      dispatch(getFeedRecipes(pageNum));
+    } else {
+      dispatch(getRandomRecipes(pageNum));
+    }
+  }, [dispatch, isAuthenticated]);
 
   useEffect(() => {
-    dispatch(getFeedRecipes(1));
-  }, [dispatch]);
+    setPage(1);
+    setHasMore(true);
+    loadRecipes(1);
+  }, [loadRecipes]);
 
   const loadMoreRecipes = useCallback(() => {
-    if (hasMore) {
-      dispatch(getFeedRecipes(page + 1));
+    console.log('loadMoreRecipes called, current page:', page);
+    if (hasMore && !loading) {
+      const nextPage = page + 1;
+      console.log('Loading more recipes, next page:', nextPage);
+      loadRecipes(nextPage);
+      setPage(nextPage);
     }
-  }, [dispatch, hasMore, page]);
+  }, [hasMore, loading, page, loadRecipes]);
 
-  if (loading && page === 1) {
-    return (
-      <Container maxWidth="sm" sx={{ mt: 4, mb: 4, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress />
-      </Container>
-    );
-  }
+  useEffect(() => {
+    const recipes = isAuthenticated ? feedRecipes : randomRecipes;
+    console.log('Recipes updated, length:', recipes.length);
+    setHasMore(recipes.length % 10 === 0 && recipes.length > 0);
+  }, [feedRecipes, randomRecipes, isAuthenticated]);
+
+  const recipes = isAuthenticated ? feedRecipes : randomRecipes;
+  const title = isAuthenticated ? 'Your Feed' : 'Discover Recipes';
+
+  console.log('HomePage render - recipes:', recipes.length, 'hasMore:', hasMore, 'page:', page);
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-        Your Feed
+        {title}
       </Typography>
-      {feedRecipes.length === 0 ? (
+      <Box sx={{ mt: 2 }}>
+        <RecipeList
+          recipes={recipes}
+          loading={loading}
+          error={error}
+          title={title}
+          hasMore={hasMore}
+          onLoadMore={loadMoreRecipes}
+          currentPage={page}
+        />
+      </Box>
+      {isAuthenticated && recipes.length === 0 && !loading && (
         <Typography variant="body1" align="center" sx={{ mt: 2 }}>
           No recipes in your feed. Follow some users to see their recipes!
         </Typography>
-      ) : (
-        <InfiniteScroll
-          dataLength={feedRecipes.length}
-          next={loadMoreRecipes}
-          hasMore={hasMore}
-          loader={<CircularProgress sx={{ mt: 2, mb: 2 }} />}
-          endMessage={
-            <Typography variant="body2" align="center" sx={{ mt: 2, mb: 2 }}>
-              You've seen all the recipes in your feed!
-            </Typography>
-          }
-        >
-          {feedRecipes.map((recipe) => (
-            <Box key={recipe._id} sx={{ mb: 4, animation: `${fadeIn} 1s ease-out` }}>
-              <RecipePost recipe={recipe} />
-            </Box>
-          ))}
-        </InfiniteScroll>
       )}
     </Container>
   );

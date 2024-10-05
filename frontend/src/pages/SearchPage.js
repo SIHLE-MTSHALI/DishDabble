@@ -5,7 +5,7 @@ import RecipeList from '../components/recipes/RecipeList';
 import { Box, Typography, TextField, Button } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 
-const SearchPage = ({ searchRecipes, recipes, loading, error }) => {
+const SearchPage = ({ searchRecipes, recipes, loading, error, hasMore }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const location = useLocation();
@@ -28,29 +28,15 @@ const SearchPage = ({ searchRecipes, recipes, loading, error }) => {
     }
   }, [location, handleSearch]);
 
-  const handleScroll = () => {
-    if (
-      window.innerHeight + document.documentElement.scrollTop ===
-      document.documentElement.offsetHeight
-    ) {
-      console.log('SearchPage: Reached bottom of page, loading more results');
+  const loadMoreRecipes = useCallback(() => {
+    if (hasMore && !loading && searchTerm.trim()) {
+      console.log(`SearchPage: Loading more results for "${searchTerm}", page ${page + 1}`);
+      searchRecipes(searchTerm, page + 1);
       setPage(prevPage => prevPage + 1);
     }
-  };
+  }, [searchRecipes, hasMore, loading, searchTerm, page]);
 
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    if (page > 1 && searchTerm.trim()) {
-      console.log(`SearchPage: Loading more results for "${searchTerm}", page ${page}`);
-      searchRecipes(searchTerm, page);
-    }
-  }, [searchRecipes, page, searchTerm]);
-
-  console.log('SearchPage: Rendering with state:', { recipes, loading, error, searchTerm, page });
+  console.log('SearchPage: Rendering with state:', { recipes, loading, error, searchTerm, page, hasMore });
 
   return (
     <Box sx={{ padding: 3 }}>
@@ -75,6 +61,9 @@ const SearchPage = ({ searchRecipes, recipes, loading, error }) => {
         loading={loading} 
         error={error}
         title={`Search Results for "${searchTerm}"`}
+        hasMore={hasMore}
+        onLoadMore={loadMoreRecipes}
+        currentPage={page}
       />
     </Box>
   );
@@ -83,7 +72,8 @@ const SearchPage = ({ searchRecipes, recipes, loading, error }) => {
 const mapStateToProps = state => ({
   recipes: state.recipe.recipes,
   loading: state.recipe.loading,
-  error: state.recipe.error
+  error: state.recipe.error,
+  hasMore: state.recipe.hasMore
 });
 
 export default connect(mapStateToProps, { searchRecipes })(SearchPage);

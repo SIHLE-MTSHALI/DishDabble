@@ -57,7 +57,16 @@ const recipeReducer = (state = initialState, action) => {
     case GET_FEED_RECIPES:
       return {
         ...state,
-        feedRecipes: payload.recipes,
+        feedRecipes: payload.currentPage === 1 ? payload.recipes : [...state.feedRecipes, ...payload.recipes],
+        hasMore: payload.hasMore,
+        page: payload.currentPage,
+        loading: false,
+        error: null
+      };
+    case GET_RANDOM_RECIPES:
+      return {
+        ...state,
+        randomRecipes: payload.currentPage === 1 ? payload.recipes : [...state.randomRecipes, ...payload.recipes],
         hasMore: payload.hasMore,
         page: payload.currentPage,
         loading: false,
@@ -67,15 +76,10 @@ const recipeReducer = (state = initialState, action) => {
       return {
         ...state,
         recipes: [...state.recipes, ...payload.recipes],
+        feedRecipes: [...state.feedRecipes, ...payload.recipes],
+        randomRecipes: [...state.randomRecipes, ...payload.recipes],
         hasMore: payload.hasMore,
         page: payload.currentPage,
-        loading: false,
-        error: null
-      };
-    case GET_RANDOM_RECIPES:
-      return {
-        ...state,
-        randomRecipes: payload,
         loading: false,
         error: null
       };
@@ -105,6 +109,9 @@ const recipeReducer = (state = initialState, action) => {
         trendingRecipes: state.trendingRecipes.map(recipe =>
           recipe._id === payload._id ? payload : recipe
         ),
+        randomRecipes: state.randomRecipes.map(recipe =>
+          recipe._id === payload._id ? payload : recipe
+        ),
         recipe: payload,
         loading: false,
         error: null
@@ -115,6 +122,7 @@ const recipeReducer = (state = initialState, action) => {
         recipes: state.recipes.filter(recipe => recipe._id !== payload),
         feedRecipes: state.feedRecipes.filter(recipe => recipe._id !== payload),
         trendingRecipes: state.trendingRecipes.filter(recipe => recipe._id !== payload),
+        randomRecipes: state.randomRecipes.filter(recipe => recipe._id !== payload),
         loading: false,
         error: null
       };

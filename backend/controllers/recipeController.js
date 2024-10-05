@@ -14,16 +14,56 @@ const deleteImage = (filename) => {
 };
 
 exports.createRecipe = async (req, res) => {
+  console.log('createRecipe: Received request');
+  console.log('createRecipe: Request body:', JSON.stringify(req.body, null, 2));
+  console.log('createRecipe: Request files:', req.files);
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.log('createRecipe: Validation errors:', errors.array());
     return res.status(400).json({ errors: errors.array() });
   }
 
   try {
+    const { title, description, ingredients, instructions, prepTime, cookTime, difficulty, servings, tags } = req.body;
+
+    console.log('createRecipe: Parsed ingredients:', ingredients);
+    console.log('createRecipe: Parsed instructions:', instructions);
+    console.log('createRecipe: Parsed tags:', tags);
+
+    let parsedIngredients, parsedInstructions, parsedTags;
+
+    try {
+      parsedIngredients = JSON.parse(ingredients);
+      parsedInstructions = JSON.parse(instructions);
+      parsedTags = JSON.parse(tags);
+    } catch (parseError) {
+      console.error('createRecipe: Error parsing JSON:', parseError);
+      return res.status(400).json({ msg: 'Invalid JSON format for ingredients, instructions, or tags' });
+    }
+
+    if (!Array.isArray(parsedIngredients) || parsedIngredients.length === 0) {
+      return res.status(400).json({ msg: 'At least one ingredient is required' });
+    }
+
+    if (!Array.isArray(parsedInstructions) || parsedInstructions.length === 0) {
+      return res.status(400).json({ msg: 'At least one instruction is required' });
+    }
+
     const newRecipe = new Recipe({
       user: req.user.id,
-      ...req.body
+      title,
+      description,
+      ingredients: parsedIngredients,
+      instructions: parsedInstructions,
+      prepTime,
+      cookTime,
+      difficulty,
+      servings,
+      tags: parsedTags
     });
+
+    console.log('createRecipe: New recipe object:', JSON.stringify(newRecipe, null, 2));
 
     // Handle image uploads
     if (req.files && req.files.length > 0) {
@@ -31,10 +71,11 @@ exports.createRecipe = async (req, res) => {
     }
 
     const recipe = await newRecipe.save();
+    console.log('createRecipe: Recipe saved successfully:', JSON.stringify(recipe, null, 2));
     res.json(recipe);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    console.error('createRecipe: Error:', err.message);
+    res.status(500).json({ msg: 'Server Error', error: err.message });
   }
 };
 
@@ -72,13 +113,17 @@ exports.getAllRecipes = async (req, res) => {
 
 exports.getRecipeById = async (req, res) => {
   try {
+    console.log(`getRecipeById: Fetching recipe with ID ${req.params.id}`);
     const recipe = await Recipe.findById(req.params.id).populate('user', ['name', 'avatar']);
     if (!recipe) {
+      console.log(`getRecipeById: Recipe with ID ${req.params.id} not found`);
       return res.status(404).json({ msg: 'Recipe not found' });
     }
+    console.log('getRecipeById: Recipe data:', JSON.stringify(recipe, null, 2));
+    console.log('getRecipeById: Ingredients:', JSON.stringify(recipe.ingredients, null, 2));
     res.json(recipe);
   } catch (err) {
-    console.error(err.message);
+    console.error('getRecipeById: Error:', err.message);
     if (err.kind === 'ObjectId') {
       return res.status(404).json({ msg: 'Recipe not found' });
     }
@@ -515,15 +560,20 @@ exports.commentRecipe = async (req, res) => {
 exports.getRandomRecipes = async (req, res) => {
   try {
     console.log('getRandomRecipes: Fetching random recipes');
+    const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const startIndex = (page - 1) * limit;
 
-    console.log(`getRandomRecipes: Limit ${limit}`);
+    console.log(`getRandomRecipes: Page ${page}, Limit ${limit}, StartIndex ${startIndex}`);
 
     const totalRecipes = await Recipe.countDocuments();
     console.log(`getRandomRecipes: Total recipes: ${totalRecipes}`);
 
+    // Get a random set of recipes
     const randomRecipes = await Recipe.aggregate([
-      { $sample: { size: limit } },
+      { $sample: { size: totalRecipes } }, // Get all recipes in random order
+      { $skip: startIndex },
+      { $limit: limit },
       { $lookup: {
           from: 'users',
           localField: 'user',
@@ -539,9 +589,16 @@ exports.getRandomRecipes = async (req, res) => {
       }
     ]);
 
+    const hasMore = startIndex + randomRecipes.length < totalRecipes;
+
     console.log(`getRandomRecipes: Found ${randomRecipes.length} random recipes`);
 
-    res.json(randomRecipes);
+    res.json({
+      recipes: randomRecipes,
+      hasMore,
+      currentPage: page,
+      totalPages: Math.ceil(totalRecipes / limit)
+    });
   } catch (err) {
     console.error('getRandomRecipes: Error:', err.message);
     res.status(500).send('Server Error');

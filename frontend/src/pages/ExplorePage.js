@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { Box, Tabs, Tab, Typography } from '@mui/material';
 import { getRandomRecipes } from '../actions/recipe';
@@ -8,12 +8,13 @@ import RecipeList from '../components/recipes/RecipeList';
 import UserList from '../components/users/UserList';
 import TagList from '../components/tags/TagList';
 
-const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes, users, tags, loading, error }) => {
+const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes, users, tags, loading, error, hasMore }) => {
   const [activeTab, setActiveTab] = useState(0);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    console.log('ExplorePage: Fetching random data');
-    getRandomRecipes();
+    console.log('ExplorePage: Fetching initial random data');
+    getRandomRecipes(1);
     getRandomUsers();
     getRandomTags();
   }, [getRandomRecipes, getRandomUsers, getRandomTags]);
@@ -38,12 +39,23 @@ const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes,
     setActiveTab(newValue);
   };
 
+  const loadMoreRecipes = useCallback(() => {
+    if (hasMore && !loading.recipe) {
+      console.log('ExplorePage: Loading more random recipes');
+      const nextPage = page + 1;
+      getRandomRecipes(nextPage);
+      setPage(nextPage);
+    }
+  }, [hasMore, loading.recipe, page, getRandomRecipes]);
+
   console.log('ExplorePage: Rendering with state:', { 
     recipes: recipes.length, 
     users: users.length, 
     tags: tags.length, 
     loading, 
-    error 
+    error,
+    hasMore,
+    page
   });
 
   return (
@@ -63,6 +75,9 @@ const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes,
             loading={loading.recipe} 
             error={error.recipe}
             title="Random Recipes"
+            hasMore={hasMore}
+            onLoadMore={loadMoreRecipes}
+            currentPage={page}
           />
         )}
         {activeTab === 1 && (
@@ -109,7 +124,8 @@ const mapStateToProps = state => {
     users: state.user.randomUsers.length,
     tags: state.tag.randomTags.length,
     loading: state.recipe.loading && state.user.loading && state.tag.loading,
-    error: state.recipe.error || state.user.error || state.tag.error
+    error: state.recipe.error || state.user.error || state.tag.error,
+    hasMore: state.recipe.hasMore
   });
   return {
     recipes: state.recipe.randomRecipes,
@@ -124,7 +140,8 @@ const mapStateToProps = state => {
       recipe: state.recipe.error,
       user: state.user.error,
       tag: state.tag.error
-    }
+    },
+    hasMore: state.recipe.hasMore
   };
 };
 

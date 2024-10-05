@@ -26,6 +26,13 @@ const RecipeDetail = () => {
     dispatch(getRecipe(id));
   }, [dispatch, id]);
 
+  useEffect(() => {
+    if (recipe) {
+      console.log('Raw recipe data:', JSON.stringify(recipe, null, 2));
+      console.log('Ingredients:', JSON.stringify(recipe.ingredients, null, 2));
+    }
+  }, [recipe]);
+
   const handleLike = () => {
     if (isAuthenticated) {
       if (recipe.likes.includes(user._id)) {
@@ -94,7 +101,7 @@ const RecipeDetail = () => {
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Box display="flex" justifyContent="center" flexWrap="wrap">
-            {recipe.images.map((image, index) => (
+            {recipe.images && recipe.images.map((image, index) => (
               <Box
                 key={index}
                 sx={{
@@ -135,7 +142,7 @@ const RecipeDetail = () => {
                 <ArrowBackIosNewIcon />
               </IconButton>
               <img 
-                src={recipe.images[currentImageIndex] || 'https://via.placeholder.com/800x600?text=No+Image'} 
+                src={recipe.images && recipe.images[currentImageIndex] ? recipe.images[currentImageIndex] : 'https://via.placeholder.com/800x600?text=No+Image'} 
                 alt={`${recipe.title} - ${currentImageIndex + 1}`} 
                 style={{maxWidth: '80vw', maxHeight: '80vh'}}
               />
@@ -159,32 +166,32 @@ const RecipeDetail = () => {
           </Box>
           <Box display="flex" alignItems="center" mb={2}>
             <IconButton onClick={handleLike} disabled={!isAuthenticated}>
-              {recipe.likes.includes(user?._id) ? (
+              {recipe.likes && recipe.likes.includes(user?._id) ? (
                 <FavoriteIcon color="error" />
               ) : (
                 <FavoriteBorderIcon />
               )}
             </IconButton>
             <Typography variant="body1" mr={2}>
-              {recipe.likes.length} {recipe.likes.length === 1 ? 'like' : 'likes'}
+              {recipe.likes ? recipe.likes.length : 0} {recipe.likes && recipe.likes.length === 1 ? 'like' : 'likes'}
             </Typography>
             <IconButton onClick={handleSave} disabled={!isAuthenticated}>
-              {recipe.saves.includes(user?._id) ? (
+              {recipe.saves && recipe.saves.includes(user?._id) ? (
                 <BookmarkIcon color="primary" />
               ) : (
                 <BookmarkBorderIcon />
               )}
             </IconButton>
             <Typography variant="body1">
-              {recipe.saves.length} {recipe.saves.length === 1 ? 'save' : 'saves'}
+              {recipe.saves ? recipe.saves.length : 0} {recipe.saves && recipe.saves.length === 1 ? 'save' : 'saves'}
             </Typography>
           </Box>
           <Typography variant="body1" mb={2}>
-            Posted by: {recipe.user.name}
+            Posted by: {recipe.user ? recipe.user.name : 'Unknown'}
           </Typography>
           <Box my={2}>
             <Typography variant="h6">Tags:</Typography>
-            {recipe.tags.map((tag, index) => (
+            {recipe.tags && recipe.tags.map((tag, index) => (
               <Chip key={index} label={tag} sx={{ mr: 1, mb: 1 }} />
             ))}
           </Box>
@@ -193,9 +200,11 @@ const RecipeDetail = () => {
       <Box my={2}>
         <Typography variant="h6">Ingredients:</Typography>
         <List>
-          {recipe.ingredients.map((ingredient, index) => (
+          {recipe.ingredients && recipe.ingredients.map((ingredient, index) => (
             <ListItem key={index}>
-              <ListItemText primary={`${ingredient.quantity} ${ingredient.unit} ${ingredient.name}`} />
+              <ListItemText 
+                primary={`${ingredient.quantity || ''} ${ingredient.name || 'Unknown ingredient'}`} 
+              />
             </ListItem>
           ))}
         </List>
@@ -203,7 +212,7 @@ const RecipeDetail = () => {
       <Box my={2}>
         <Typography variant="h6">Instructions:</Typography>
         <List>
-          {recipe.instructions.map((instruction, index) => (
+          {recipe.instructions && recipe.instructions.map((instruction, index) => (
             <ListItem key={index}>
               <ListItemText primary={`${index + 1}. ${instruction}`} />
             </ListItem>
@@ -231,14 +240,14 @@ const RecipeDetail = () => {
             Please <Link to="/login">log in</Link> to add a comment.
           </Typography>
         )}
-        {recipe.comments.map((comment, index) => (
+        {recipe.comments && recipe.comments.map((comment, index) => (
           <Box key={index} sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
             <Typography variant="subtitle2">{comment.name}</Typography>
             <Typography variant="body1">{comment.text}</Typography>
           </Box>
         ))}
       </Box>
-      {user && user._id === recipe.user._id && (
+      {user && recipe.user && user._id === recipe.user._id && (
         <Box mt={3}>
           <Button component={Link} to={`/edit-recipe/${recipe._id}`} variant="contained" color="primary" sx={{ mr: 2 }}>
             Edit Recipe

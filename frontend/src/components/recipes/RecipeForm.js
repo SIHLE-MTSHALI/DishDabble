@@ -77,8 +77,17 @@ const RecipeForm = () => {
     e.preventDefault();
     const formDataToSend = new FormData();
     Object.keys(formData).forEach(key => {
-      if (key === 'ingredients' || key === 'instructions' || key === 'tags') {
-        formDataToSend.append(key, JSON.stringify(formData[key]));
+      if (key === 'ingredients') {
+        const filteredIngredients = formData.ingredients.filter(ing => ing.name && ing.quantity);
+        console.log('Filtered ingredients:', filteredIngredients);
+        formDataToSend.append('ingredients', JSON.stringify(filteredIngredients));
+      } else if (key === 'instructions') {
+        const filteredInstructions = formData.instructions.filter(inst => inst.trim() !== '');
+        console.log('Filtered instructions:', filteredInstructions);
+        formDataToSend.append('instructions', JSON.stringify(filteredInstructions));
+      } else if (key === 'tags') {
+        console.log('Tags:', formData.tags);
+        formDataToSend.append('tags', JSON.stringify(formData.tags));
       } else if (key === 'images') {
         formData[key].forEach(image => {
           formDataToSend.append('images', image);
@@ -88,12 +97,18 @@ const RecipeForm = () => {
       }
     });
 
-    if (id) {
-      await dispatch(updateRecipe(id, formDataToSend));
-    } else {
-      await dispatch(addRecipe(formDataToSend));
+    console.log('Form data being sent:', Object.fromEntries(formDataToSend));
+
+    try {
+      if (id) {
+        await dispatch(updateRecipe(id, formDataToSend));
+      } else {
+        await dispatch(addRecipe(formDataToSend));
+      }
+      navigate('/home');
+    } catch (error) {
+      console.error('Error submitting recipe:', error);
     }
-    navigate('/home');
   };
 
   const addIngredient = () => {
@@ -191,7 +206,6 @@ const RecipeForm = () => {
                 newIngredients[index].unit = e.target.value;
                 setFormData({ ...formData, ingredients: newIngredients });
               }}
-              required
               sx={{ mr: 1 }}
             />
             <Button onClick={() => removeIngredient(index)}>Remove</Button>

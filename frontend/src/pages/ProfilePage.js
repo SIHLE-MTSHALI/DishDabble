@@ -23,7 +23,7 @@ const ProfilePage = () => {
   const { username: urlUsername } = useParams();
   const { user: authUser, loading: authLoading } = useSelector(state => state.auth);
   const { userProfile, loading: profileLoading, followers, following, error } = useSelector(state => state.user);
-  const { recipes, loading: recipeLoading, hasMore, page } = useSelector(state => state.recipe);
+  const { recipes, loading: recipeLoading, hasMore } = useSelector(state => state.recipe);
   const dispatch = useDispatch();
   const [tabValue, setTabValue] = useState(0);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -35,6 +35,7 @@ const ProfilePage = () => {
   const [localUserProfile, setLocalUserProfile] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [page, setPage] = useState(1);
 
   console.log('Current state:', { authUser, userProfile, profileLoading, followers, following, error, recipes, recipeLoading });
   console.log('URL username:', urlUsername);
@@ -72,6 +73,7 @@ const ProfilePage = () => {
     if (userProfile) {
       setLocalUserProfile(userProfile);
       dispatch(getUserRecipes(userProfile._id, 1));
+      setPage(1);
     }
   }, [userProfile, dispatch]);
 
@@ -106,11 +108,13 @@ const ProfilePage = () => {
   }, [localUserProfile]);
 
   const loadMoreRecipes = useCallback(() => {
-    if (hasMore && localUserProfile) {
+    if (hasMore && !recipeLoading && localUserProfile) {
       console.log('Loading more recipes for user:', localUserProfile._id);
-      dispatch(getUserRecipes(localUserProfile._id, page + 1));
+      const nextPage = page + 1;
+      dispatch(getUserRecipes(localUserProfile._id, nextPage));
+      setPage(nextPage);
     }
-  }, [dispatch, hasMore, page, localUserProfile]);
+  }, [dispatch, hasMore, recipeLoading, page, localUserProfile]);
 
   const handleFollowToggle = async () => {
     if (localUserProfile && authUser) {

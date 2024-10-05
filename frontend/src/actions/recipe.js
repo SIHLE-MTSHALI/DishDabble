@@ -450,7 +450,11 @@ export const getFeedRecipes = (page = 1, limit = 10) => async dispatch => {
 
     dispatch({
       type: page === 1 ? GET_FEED_RECIPES : GET_MORE_RECIPES,
-      payload: res.data
+      payload: {
+        recipes: res.data.recipes,
+        hasMore: res.data.hasMore,
+        currentPage: res.data.currentPage
+      }
     });
 
     console.log('getFeedRecipes: Feed recipes dispatched to store');
@@ -510,23 +514,27 @@ export const addComment = (recipeId, comment) => async dispatch => {
   }
 };
 
-// Get random recipes
-export const getRandomRecipes = (limit = 10) => async dispatch => {
+// Get random recipes with pagination
+export const getRandomRecipes = (page = 1, limit = 10) => async dispatch => {
   try {
-    console.log(`getRandomRecipes: Fetching random recipes - limit ${limit}`);
-    console.log(`getRandomRecipes: API URL - ${API_URL}/api/recipes/random?limit=${limit}`);
+    console.log(`getRandomRecipes: Fetching random recipes - page ${page}, limit ${limit}`);
+    console.log(`getRandomRecipes: API URL - ${API_URL}/api/recipes/random?page=${page}&limit=${limit}`);
     
-    const res = await axios.get(`${API_URL}/api/recipes/random?limit=${limit}`);
+    const res = await axios.get(`${API_URL}/api/recipes/random?page=${page}&limit=${limit}`);
     console.log('getRandomRecipes: API response:', res.data);
 
-    if (!res.data || !Array.isArray(res.data)) {
+    if (!res.data || !Array.isArray(res.data.recipes)) {
       console.error('getRandomRecipes: Invalid data structure received from API:', res.data);
       throw new Error('Invalid data structure received from API');
     }
 
     dispatch({
-      type: GET_RANDOM_RECIPES,
-      payload: res.data
+      type: page === 1 ? GET_RANDOM_RECIPES : GET_MORE_RECIPES,
+      payload: {
+        recipes: res.data.recipes,
+        hasMore: res.data.hasMore,
+        currentPage: res.data.currentPage
+      }
     });
 
     console.log('getRandomRecipes: Random recipes dispatched to store');
@@ -543,3 +551,4 @@ export const getRandomRecipes = (limit = 10) => async dispatch => {
     dispatch(setAlert('Error fetching random recipes', 'error'));
   }
 };
+
