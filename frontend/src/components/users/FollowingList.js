@@ -1,37 +1,27 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { getFollowing } from '../../actions/user';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import Spinner from '../layout/Spinner';
+import { List, ListItem, ListItemAvatar, ListItemText, Avatar, Typography } from '@mui/material';
 
-const FollowingList = ({ userId }) => {
-  const dispatch = useDispatch();
-  const { following, loading } = useSelector(state => state.user);
-
-  useEffect(() => {
-    dispatch(getFollowing(userId));
-  }, [dispatch, userId]);
-
-  if (loading) {
-    return <Spinner />;
-  }
-
+const FollowingList = ({ following }) => {
   return (
     <div className="following-list">
-      <h2>Following</h2>
+      <Typography variant="h6" gutterBottom>Following</Typography>
       {following.length === 0 ? (
-        <p>Not following anyone yet.</p>
+        <Typography>Not following anyone yet.</Typography>
       ) : (
-        <ul>
+        <List>
           {following.map(user => (
-            <li key={user._id}>
-              <Link to={`/profile/${user.username}`}>
-                <img src={user.avatar} alt={user.name} className="avatar" />
-                <span>{user.name}</span>
-              </Link>
-            </li>
+            <ListItem key={user._id} component={Link} to={`/profile/${user.username}`}>
+              <ListItemAvatar>
+                <Avatar src={user.avatar} alt={user.name} />
+              </ListItemAvatar>
+              <ListItemText 
+                primary={user.name}
+                secondary={`@${user.username}`}
+              />
+            </ListItem>
           ))}
-        </ul>
+        </List>
       )}
     </div>
   );

@@ -4,6 +4,7 @@ import {
   UPDATE_FOLLOWERS,
   GET_RANDOM_USERS,
   GET_USER_PROFILE,
+  UPDATE_USER_PROFILE,
   GET_FOLLOWERS,
   GET_FOLLOWING,
   USER_ERROR
@@ -26,7 +27,8 @@ const userReducer = (state = initialState, action) => {
       return {
         ...state,
         randomUsers: payload,
-        loading: false
+        loading: false,
+        error: null
       };
     case FOLLOW_USER:
     case UNFOLLOW_USER:
@@ -40,7 +42,8 @@ const userReducer = (state = initialState, action) => {
         userProfile: state.userProfile && state.userProfile._id === payload.userId
           ? { ...state.userProfile, followers: payload.followers }
           : state.userProfile,
-        loading: false
+        loading: false,
+        error: null
       };
     case UPDATE_FOLLOWERS:
       return {
@@ -53,27 +56,44 @@ const userReducer = (state = initialState, action) => {
         userProfile: state.userProfile && state.userProfile._id === payload.userId
           ? { ...state.userProfile, followers: payload.followers }
           : state.userProfile,
-        loading: false
+        loading: false,
+        error: null
       };
     case GET_USER_PROFILE:
+      console.log('GET_USER_PROFILE reducer - Payload:', payload);
+      const userProfileData = payload.user || payload; // Handle both {user: {...}} and {...} formats
+      const recipesData = payload.recipes || [];
+      console.log('GET_USER_PROFILE reducer - Extracted user profile data:', userProfileData);
+      return {
+        ...state,
+        userProfile: userProfileData,
+        recipes: recipesData,
+        loading: false,
+        error: null
+      };
+    case UPDATE_USER_PROFILE:
       return {
         ...state,
         userProfile: payload,
-        loading: false
+        loading: false,
+        error: null
       };
     case GET_FOLLOWERS:
       return {
         ...state,
         followers: payload,
-        loading: false
+        loading: false,
+        error: null
       };
     case GET_FOLLOWING:
       return {
         ...state,
         following: payload,
-        loading: false
+        loading: false,
+        error: null
       };
     case USER_ERROR:
+      console.error('USER_ERROR reducer - Payload:', payload);
       return {
         ...state,
         error: payload,

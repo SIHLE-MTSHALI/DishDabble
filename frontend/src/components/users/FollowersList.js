@@ -1,22 +1,8 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { getFollowers } from '../../actions/user';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { List, ListItem, ListItemAvatar, ListItemText, Avatar, Typography } from '@mui/material';
-import Spinner from '../layout/Spinner';
 
-const FollowersList = ({ userId }) => {
-  const dispatch = useDispatch();
-  const { followers, loading } = useSelector(state => state.user);
-
-  useEffect(() => {
-    dispatch(getFollowers(userId));
-  }, [dispatch, userId]);
-
-  if (loading) {
-    return <Spinner />;
-  }
-
+const FollowersList = ({ followers }) => {
   return (
     <div className="followers-list">
       <Typography variant="h6" gutterBottom>Followers</Typography>

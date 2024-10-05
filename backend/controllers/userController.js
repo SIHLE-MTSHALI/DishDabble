@@ -274,12 +274,20 @@ exports.unfollowUser = async (req, res) => {
 exports.getUserProfile = async (req, res) => {
   console.log('Fetching user profile for:', req.params.username);
   try {
+    if (!req.params.username) {
+      console.log('Username parameter is missing');
+      return res.status(400).json({ msg: 'Username is required' });
+    }
+
     // First, try to find the user by username
     let user = await User.findOne({ username: req.params.username }).select('-password');
+    console.log('User search by username result:', user ? 'Found' : 'Not found');
 
     // If user is not found by username, check if it's a valid ObjectId and try to find by ID
     if (!user && mongoose.Types.ObjectId.isValid(req.params.username)) {
+      console.log('Username not found, trying to find by ObjectId');
       user = await User.findById(req.params.username).select('-password');
+      console.log('User search by ObjectId result:', user ? 'Found' : 'Not found');
     }
 
     if (!user) {
@@ -287,13 +295,29 @@ exports.getUserProfile = async (req, res) => {
       return res.status(404).json({ msg: 'User not found' });
     }
 
-    const recipes = await Recipe.find({ user: user._id }).sort({ createdAt: -1 });
+    console.log('User found:', user.username);
+
+    const recipes = await Recipe.find({ user: user._id }).sort({ createdAt: -1 }).limit(10);
     console.log(`Retrieved ${recipes.length} recipes for user ${user.id}`);
 
-    res.json({ user, recipes });
+    const userProfileData = {
+      _id: user._id,
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+      bio: user.bio,
+      website: user.website,
+      followers: user.followers,
+      following: user.following,
+      createdAt: user.createdAt
+    };
+
+    res.json({ user: userProfileData, recipes });
   } catch (err) {
     console.error('Error in getUserProfile:', err.message);
-    res.status(500).send('Server Error');
+    console.error('Full error object:', err);
+    res.status(500).json({ msg: 'Server Error', error: err.message });
   }
 };
 
