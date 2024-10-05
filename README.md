@@ -133,7 +133,7 @@ To run the data generator, follow these steps:
 
 3. Run the data generator script:
    ```
-   node dataGenerator.js
+   node dataGenerator.js   or   npm run populate-db --prefix backend
    ```
 
 4. The script will start generating data and you'll see progress messages in the console.
