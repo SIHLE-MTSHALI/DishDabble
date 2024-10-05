@@ -15,34 +15,48 @@ const API_URL = process.env.REACT_APP_API_URL;
 
 // Follow a user
 export const followUser = (userId) => async (dispatch) => {
+  console.log(`Attempting to follow user: ${userId}`);
   try {
     const res = await axios.put(`${API_URL}/api/users/follow/${userId}`);
+    console.log('Follow user response:', res.data);
 
     dispatch({
       type: FOLLOW_USER,
       payload: { userId, followers: res.data.followers, following: res.data.following }
     });
+    console.log('FOLLOW_USER action dispatched');
   } catch (err) {
+    console.error('Error in followUser action:', err.response?.data || err.message);
     dispatch({
       type: USER_ERROR,
-      payload: { msg: err.response?.data?.msg || 'Error following user', status: err.response?.status || 500 }
+      payload: { 
+        msg: err.response?.data?.msg || err.response?.data?.error || err.message || 'Error following user', 
+        status: err.response?.status || 500 
+      }
     });
   }
 };
 
 // Unfollow a user
 export const unfollowUser = (userId) => async (dispatch) => {
+  console.log(`Attempting to unfollow user: ${userId}`);
   try {
     const res = await axios.put(`${API_URL}/api/users/unfollow/${userId}`);
+    console.log('Unfollow user response:', res.data);
 
     dispatch({
       type: UNFOLLOW_USER,
       payload: { userId, followers: res.data.followers, following: res.data.following }
     });
+    console.log('UNFOLLOW_USER action dispatched');
   } catch (err) {
+    console.error('Error in unfollowUser action:', err.response?.data || err.message);
     dispatch({
       type: USER_ERROR,
-      payload: { msg: err.response?.data?.msg || 'Error unfollowing user', status: err.response?.status || 500 }
+      payload: { 
+        msg: err.response?.data?.msg || err.response?.data?.error || err.message || 'Error unfollowing user', 
+        status: err.response?.status || 500 
+      }
     });
   }
 };
@@ -55,14 +69,18 @@ export const updateFollowers = (followers) => ({
 
 // Get random users
 export const getRandomUsers = (limit = 10) => async (dispatch) => {
+  console.log('getRandomUsers action: Fetching random users');
   try {
     const res = await axios.get(`${API_URL}/api/users/random?limit=${limit}`);
+    console.log('getRandomUsers action: Received data:', res.data);
 
     dispatch({
       type: GET_RANDOM_USERS,
       payload: res.data
     });
+    console.log('getRandomUsers action: Dispatched GET_RANDOM_USERS');
   } catch (err) {
+    console.error('getRandomUsers action: Error:', err.response?.data || err.message);
     dispatch({
       type: USER_ERROR,
       payload: { msg: err.response?.data?.msg || 'Error fetching random users', status: err.response?.status || 500 }

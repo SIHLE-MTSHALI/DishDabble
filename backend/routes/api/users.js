@@ -25,20 +25,10 @@ router.post(
 // @access  Public
 router.get('/', userController.getAllUsers);
 
-// @route   GET api/users/:id
-// @desc    Get user by ID
+// @route   GET api/users/random
+// @desc    Get random users
 // @access  Public
-router.get('/:id', userController.getUserById);
-
-// @route   PUT api/users/follow/:id
-// @desc    Follow a user
-// @access  Private
-router.put('/follow/:id', auth, userController.followUser);
-
-// @route   PUT api/users/unfollow/:id
-// @desc    Unfollow a user
-// @access  Private
-router.put('/unfollow/:id', auth, userController.unfollowUser);
+router.get('/random', userController.getRandomUsers);
 
 // @route   GET api/users/profile/:username
 // @desc    Get user profile
@@ -50,10 +40,20 @@ router.get('/profile/:username', userController.getUserProfile);
 // @access  Private
 router.put('/profile', auth, userController.updateUserProfile);
 
-// @route   GET api/users/random
-// @desc    Get random users
+// @route   PUT api/users/follow/:id
+// @desc    Follow a user
+// @access  Private
+router.put('/follow/:id', auth, userController.followUser);
+
+// @route   PUT api/users/unfollow/:id
+// @desc    Unfollow a user
+// @access  Private
+router.put('/unfollow/:id', auth, userController.unfollowUser);
+
+// @route   GET api/users/:id
+// @desc    Get user by ID
 // @access  Public
-router.get('/random', userController.getRandomUsers);
+router.get('/:id', userController.getUserById);
 
 // @route   GET api/users/:id/followers
 // @desc    Get user's followers

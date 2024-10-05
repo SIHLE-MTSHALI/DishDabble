@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { Typography, Container, Grid, Paper, Avatar, Button, Box, Tabs, Tab, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+import { Typography, Container, Grid, Paper, Avatar, Button, Box, Tabs, Tab, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Snackbar } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import RecipePost from '../components/recipes/RecipePost';
@@ -32,6 +32,9 @@ const ProfilePage = () => {
     bio: '',
     website: '',
   });
+  const [localUserProfile, setLocalUserProfile] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   console.log('Current state:', { authUser, userProfile, profileLoading, followers, following, error, recipes, recipeLoading });
   console.log('URL username:', urlUsername);
@@ -53,6 +56,8 @@ const ProfilePage = () => {
           dispatch(getUserRecipes(profileId, 1));
         } catch (error) {
           console.error('Error dispatching getUserProfile:', error);
+          setSnackbarMessage('Error fetching user profile');
+          setSnackbarOpen(true);
         }
       } else {
         console.log('No profile ID available to fetch profile data');
@@ -71,48 +76,72 @@ const ProfilePage = () => {
   }, [dispatch, urlUsername, authUser, authLoading]);
 
   useEffect(() => {
-    if (userProfile && (tabValue === 3 || tabValue === 4)) {
-      if (tabValue === 3 && !followers) {
-        console.log('Fetching followers for user:', userProfile._id);
-        dispatch(getFollowers(userProfile._id));
-      } else if (tabValue === 4 && !following) {
-        console.log('Fetching following for user:', userProfile._id);
-        dispatch(getFollowing(userProfile._id));
+    if (userProfile) {
+      setLocalUserProfile(userProfile);
+    }
+  }, [userProfile]);
+
+  useEffect(() => {
+    if (localUserProfile && (tabValue === 3 || tabValue === 4)) {
+      if (tabValue === 3 && (!followers || followers.length === 0)) {
+        console.log('Fetching followers for user:', localUserProfile._id);
+        dispatch(getFollowers(localUserProfile._id));
+      } else if (tabValue === 4 && (!following || following.length === 0)) {
+        console.log('Fetching following for user:', localUserProfile._id);
+        dispatch(getFollowing(localUserProfile._id));
       }
     }
-  }, [dispatch, userProfile, tabValue, followers, following]);
+  }, [dispatch, localUserProfile, tabValue, followers, following]);
 
   useEffect(() => {
     if (error) {
       console.error('Error in user state:', error);
+      setSnackbarMessage(error.msg || 'An error occurred');
+      setSnackbarOpen(true);
     }
   }, [error]);
 
   useEffect(() => {
-    if (userProfile) {
+    if (localUserProfile) {
       setEditProfileData({
-        name: userProfile.name || '',
-        bio: userProfile.bio || '',
-        website: userProfile.website || '',
+        name: localUserProfile.name || '',
+        bio: localUserProfile.bio || '',
+        website: localUserProfile.website || '',
       });
     }
-  }, [userProfile]);
+  }, [localUserProfile]);
 
   const loadMoreRecipes = useCallback(() => {
-    if (hasMore && userProfile) {
-      console.log('Loading more recipes for user:', userProfile._id);
-      dispatch(getUserRecipes(userProfile._id, page + 1));
+    if (hasMore && localUserProfile) {
+      console.log('Loading more recipes for user:', localUserProfile._id);
+      dispatch(getUserRecipes(localUserProfile._id, page + 1));
     }
-  }, [dispatch, hasMore, page, userProfile]);
+  }, [dispatch, hasMore, page, localUserProfile]);
 
-  const handleFollowToggle = () => {
-    if (userProfile && authUser) {
-      if (userProfile.followers.includes(authUser._id)) {
-        console.log('Unfollowing user:', userProfile._id);
-        dispatch(unfollowUser(userProfile._id));
-      } else {
-        console.log('Following user:', userProfile._id);
-        dispatch(followUser(userProfile._id));
+  const handleFollowToggle = async () => {
+    if (localUserProfile && authUser) {
+      const isFollowing = localUserProfile.followers.includes(authUser._id);
+      try {
+        if (isFollowing) {
+          console.log('Unfollowing user:', localUserProfile._id);
+          await dispatch(unfollowUser(localUserProfile._id));
+        } else {
+          console.log('Following user:', localUserProfile._id);
+          await dispatch(followUser(localUserProfile._id));
+        }
+        // Update local state after successful action
+        setLocalUserProfile(prevProfile => ({
+          ...prevProfile,
+          followers: isFollowing
+            ? prevProfile.followers.filter(id => id !== authUser._id)
+            : [...prevProfile.followers, authUser._id]
+        }));
+        setSnackbarMessage(isFollowing ? 'Unfollowed successfully' : 'Followed successfully');
+        setSnackbarOpen(true);
+      } catch (error) {
+        console.error('Error in follow/unfollow:', error);
+        setSnackbarMessage('Error updating follow status');
+        setSnackbarOpen(true);
       }
     }
   };
@@ -135,14 +164,27 @@ const ProfilePage = () => {
   const handleEditProfileSubmit = async () => {
     console.log('Submitting profile update:', editProfileData);
     try {
-      await dispatch(updateUserProfile(editProfileData));
+      const updatedProfile = await dispatch(updateUserProfile(editProfileData));
       console.log('Profile updated successfully');
       setEditModalOpen(false);
-      // Refresh the user profile data
-      dispatch(getUserProfile(userProfile._id));
+      setLocalUserProfile(prevProfile => ({
+        ...prevProfile,
+        ...updatedProfile
+      }));
+      setSnackbarMessage('Profile updated successfully');
+      setSnackbarOpen(true);
     } catch (error) {
       console.error('Error updating profile:', error);
+      setSnackbarMessage('Error updating profile');
+      setSnackbarOpen(true);
     }
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
   };
 
   if (authLoading || profileLoading || (recipeLoading && page === 1)) {
@@ -150,18 +192,7 @@ const ProfilePage = () => {
     return <Spinner />;
   }
 
-  if (error) {
-    console.log('Error occurred:', error);
-    return (
-      <Container>
-        <Alert severity="error">
-          {error.msg || 'An error occurred while fetching the user profile.'}
-        </Alert>
-      </Container>
-    );
-  }
-
-  if (!userProfile) {
+  if (!localUserProfile) {
     console.log('User profile not found');
     return (
       <Container>
@@ -170,13 +201,13 @@ const ProfilePage = () => {
     );
   }
 
-  console.log('Rendering profile for user:', userProfile.name);
+  console.log('Rendering profile for user:', localUserProfile.name);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
-  const isOwnProfile = authUser && authUser._id === userProfile._id;
+  const isOwnProfile = authUser && authUser._id === localUserProfile._id;
 
   return (
     <Container maxWidth="lg">
@@ -184,31 +215,31 @@ const ProfilePage = () => {
         <Grid container spacing={3} alignItems="center">
           <Grid item>
             <Avatar
-              alt={userProfile.name}
-              src={userProfile.avatar}
+              alt={localUserProfile.name}
+              src={localUserProfile.avatar}
               sx={{ width: 120, height: 120 }}
             />
           </Grid>
           <Grid item xs>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>{userProfile.name}</Typography>
+            <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>{localUserProfile.name}</Typography>
             <Typography variant="h6" color="textSecondary">
-              @{userProfile.username}
+              @{localUserProfile.username}
             </Typography>
             <Typography variant="body1" color="textSecondary">
-              {userProfile.email}
+              {localUserProfile.email}
             </Typography>
             <Typography variant="body2" sx={{ mt: 1 }}>
-              {recipes.length} Recipes | {userProfile.followers ? userProfile.followers.length : 0} Followers | {userProfile.following ? userProfile.following.length : 0} Following
+              {recipes.length} Recipes | {localUserProfile.followers ? localUserProfile.followers.length : 0} Followers | {localUserProfile.following ? localUserProfile.following.length : 0} Following
             </Typography>
-            {userProfile.bio && (
+            {localUserProfile.bio && (
               <Typography variant="body1" sx={{ mt: 1 }}>
-                {userProfile.bio}
+                {localUserProfile.bio}
               </Typography>
             )}
-            {userProfile.website && (
+            {localUserProfile.website && (
               <Typography variant="body2" sx={{ mt: 1 }}>
-                <a href={userProfile.website} target="_blank" rel="noopener noreferrer">
-                  {userProfile.website}
+                <a href={localUserProfile.website} target="_blank" rel="noopener noreferrer">
+                  {localUserProfile.website}
                 </a>
               </Typography>
             )}
@@ -221,11 +252,11 @@ const ProfilePage = () => {
             ) : (
               <Button 
                 variant="contained" 
-                color={userProfile.followers.includes(authUser._id) ? "secondary" : "primary"}
+                color={localUserProfile.followers.includes(authUser._id) ? "secondary" : "primary"}
                 onClick={handleFollowToggle}
                 sx={{ animation: `${slideInFromBottom} 0.5s ease-out` }}
               >
-                {userProfile.followers.includes(authUser._id) ? "Unfollow" : "Follow"}
+                {localUserProfile.followers.includes(authUser._id) ? "Unfollow" : "Follow"}
               </Button>
             )}
           </Grid>
@@ -245,7 +276,7 @@ const ProfilePage = () => {
       {tabValue === 0 && (
         <Box>
           <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
-            {isOwnProfile ? "My Recipes" : `${userProfile.name}'s Recipes`}
+            {isOwnProfile ? "My Recipes" : `${localUserProfile.name}'s Recipes`}
           </Typography>
           {recipes.length === 0 ? (
             <Typography>{isOwnProfile ? "You haven't created any recipes yet." : "This user hasn't created any recipes yet."}</Typography>
@@ -300,7 +331,15 @@ const ProfilePage = () => {
           <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
             Followers
           </Typography>
-          {followers ? <FollowersList followers={followers} /> : <CircularProgress />}
+          {followers ? (
+            followers.length > 0 ? (
+              <FollowersList followers={followers} />
+            ) : (
+              <Typography>No followers yet.</Typography>
+            )
+          ) : (
+            <CircularProgress />
+          )}
         </Box>
       )}
 
@@ -309,7 +348,15 @@ const ProfilePage = () => {
           <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
             Following
           </Typography>
-          {following ? <FollowingList following={following} /> : <CircularProgress />}
+          {following ? (
+            following.length > 0 ? (
+              <FollowingList following={following} />
+            ) : (
+              <Typography>Not following anyone yet.</Typography>
+            )
+          ) : (
+            <CircularProgress />
+          )}
         </Box>
       )}
 
@@ -353,6 +400,13 @@ const ProfilePage = () => {
           <Button onClick={handleEditProfileSubmit}>Save</Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        message={snackbarMessage}
+      />
     </Container>
   );
 };

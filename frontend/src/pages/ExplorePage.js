@@ -18,6 +18,10 @@ const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes,
     getRandomTags();
   }, [getRandomRecipes, getRandomUsers, getRandomTags]);
 
+  useEffect(() => {
+    console.log('ExplorePage: Users state updated', users);
+  }, [users]);
+
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
@@ -49,7 +53,14 @@ const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes,
           ) : error.user ? (
             <Typography color="error">Error loading users: {error.user.msg}</Typography>
           ) : (
-            <UserList users={users} />
+            <>
+              <Typography>Number of users: {users.length}</Typography>
+              {users.length > 0 ? (
+                <UserList users={users} />
+              ) : (
+                <Typography>No users found.</Typography>
+              )}
+            </>
           )
         )}
         {activeTab === 2 && (
@@ -66,20 +77,23 @@ const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes,
   );
 };
 
-const mapStateToProps = state => ({
-  recipes: state.recipe.randomRecipes,
-  users: state.user.randomUsers,
-  tags: state.tag.randomTags,
-  loading: {
-    recipe: state.recipe.loading,
-    user: state.user.loading,
-    tag: state.tag.loading
-  },
-  error: {
-    recipe: state.recipe.error,
-    user: state.user.error,
-    tag: state.tag.error
-  }
-});
+const mapStateToProps = state => {
+  console.log('ExplorePage: mapStateToProps', state);
+  return {
+    recipes: state.recipe.randomRecipes,
+    users: state.user.randomUsers,
+    tags: state.tag.randomTags,
+    loading: {
+      recipe: state.recipe.loading,
+      user: state.user.loading,
+      tag: state.tag.loading
+    },
+    error: {
+      recipe: state.recipe.error,
+      user: state.user.error,
+      tag: state.tag.error
+    }
+  };
+};
 
 export default connect(mapStateToProps, { getRandomRecipes, getRandomUsers, getRandomTags })(ExplorePage);

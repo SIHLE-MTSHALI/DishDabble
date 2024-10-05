@@ -22,8 +22,11 @@ const initialState = {
 const userReducer = (state = initialState, action) => {
   const { type, payload } = action;
 
+  console.log('userReducer: Received action', { type, payload });
+
   switch (type) {
     case GET_RANDOM_USERS:
+      console.log('userReducer: Handling GET_RANDOM_USERS', payload);
       return {
         ...state,
         randomUsers: payload,
@@ -32,6 +35,7 @@ const userReducer = (state = initialState, action) => {
       };
     case FOLLOW_USER:
     case UNFOLLOW_USER:
+      console.log(`userReducer: Handling ${type}`, payload);
       return {
         ...state,
         randomUsers: state.randomUsers.map(user =>
@@ -46,6 +50,7 @@ const userReducer = (state = initialState, action) => {
         error: null
       };
     case UPDATE_FOLLOWERS:
+      console.log('userReducer: Handling UPDATE_FOLLOWERS', payload);
       return {
         ...state,
         randomUsers: state.randomUsers.map(user =>
@@ -72,13 +77,18 @@ const userReducer = (state = initialState, action) => {
         error: null
       };
     case UPDATE_USER_PROFILE:
+      console.log('userReducer: Handling UPDATE_USER_PROFILE', payload);
       return {
         ...state,
-        userProfile: payload,
+        userProfile: {
+          ...state.userProfile,
+          ...payload
+        },
         loading: false,
         error: null
       };
     case GET_FOLLOWERS:
+      console.log('userReducer: Handling GET_FOLLOWERS', payload);
       return {
         ...state,
         followers: payload,
@@ -86,6 +96,7 @@ const userReducer = (state = initialState, action) => {
         error: null
       };
     case GET_FOLLOWING:
+      console.log('userReducer: Handling GET_FOLLOWING', payload);
       return {
         ...state,
         following: payload,

@@ -202,8 +202,22 @@ exports.followUser = async (req, res) => {
     currentUser.following.push(user.id);
     user.followers.push(currentUser.id);
 
-    await currentUser.save();
-    await user.save();
+    console.log('Current user before save:', currentUser);
+    console.log('Target user before save:', user);
+
+    try {
+      await currentUser.save();
+    } catch (saveErr) {
+      console.error('Error saving current user:', saveErr);
+      return res.status(500).json({ msg: 'Error updating current user', error: saveErr.message });
+    }
+
+    try {
+      await user.save();
+    } catch (saveErr) {
+      console.error('Error saving target user:', saveErr);
+      return res.status(500).json({ msg: 'Error updating target user', error: saveErr.message });
+    }
 
     console.log(`User ${currentUser.id} successfully followed ${user.id}`);
 
@@ -218,8 +232,8 @@ exports.followUser = async (req, res) => {
 
     res.json({ following: currentUser.following, followers: user.followers });
   } catch (err) {
-    console.error('Error in followUser:', err.message);
-    res.status(500).send('Server Error');
+    console.error('Error in followUser:', err);
+    res.status(500).json({ msg: 'Server Error', error: err.message });
   }
 };
 
@@ -250,8 +264,22 @@ exports.unfollowUser = async (req, res) => {
     currentUser.following = currentUser.following.filter(id => id.toString() !== user.id.toString());
     user.followers = user.followers.filter(id => id.toString() !== currentUser.id.toString());
 
-    await currentUser.save();
-    await user.save();
+    console.log('Current user before save:', currentUser);
+    console.log('Target user before save:', user);
+
+    try {
+      await currentUser.save();
+    } catch (saveErr) {
+      console.error('Error saving current user:', saveErr);
+      return res.status(500).json({ msg: 'Error updating current user', error: saveErr.message });
+    }
+
+    try {
+      await user.save();
+    } catch (saveErr) {
+      console.error('Error saving target user:', saveErr);
+      return res.status(500).json({ msg: 'Error updating target user', error: saveErr.message });
+    }
 
     console.log(`User ${currentUser.id} successfully unfollowed ${user.id}`);
 
@@ -263,8 +291,8 @@ exports.unfollowUser = async (req, res) => {
 
     res.json({ following: currentUser.following, followers: user.followers });
   } catch (err) {
-    console.error('Error in unfollowUser:', err.message);
-    res.status(500).send('Server Error');
+    console.error('Error in unfollowUser:', err);
+    res.status(500).json({ msg: 'Server Error', error: err.message });
   }
 };
 
@@ -344,7 +372,21 @@ exports.updateUserProfile = async (req, res) => {
     await user.save();
     console.log('User profile updated successfully:', user.id);
 
-    res.json(user);
+    // Return only necessary user data
+    const updatedUserData = {
+      _id: user._id,
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+      bio: user.bio,
+      website: user.website,
+      followers: user.followers,
+      following: user.following,
+      createdAt: user.createdAt
+    };
+
+    res.json(updatedUserData);
   } catch (err) {
     console.error('Error in updateUserProfile:', err.message);
     res.status(500).send('Server Error');
@@ -362,7 +404,7 @@ exports.getRandomUsers = async (req, res) => {
     console.log(`getRandomUsers: Limit ${limit}`);
 
     const totalUsers = await User.countDocuments();
-    console.log(`getRandomUsers: Total users: ${totalUsers}`);
+    console.log(`getRandomUsers: Total users in database: ${totalUsers}`);
 
     const randomUsers = await User.aggregate([
       { $sample: { size: limit } },
@@ -370,12 +412,15 @@ exports.getRandomUsers = async (req, res) => {
           _id: 1,
           name: 1,
           username: 1,
-          avatar: 1
+          avatar: 1,
+          bio: 1,
+          followers: 1
         }
       }
     ]);
 
     console.log(`getRandomUsers: Found ${randomUsers.length} random users`);
+    console.log('getRandomUsers: Sample user data:', randomUsers[0]);
 
     res.json(randomUsers);
   } catch (err) {
