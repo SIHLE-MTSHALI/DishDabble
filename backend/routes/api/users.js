@@ -65,4 +65,14 @@ router.get('/:id/followers', userController.getUserFollowers);
 // @access  Public
 router.get('/:id/following', userController.getUserFollowing);
 
+// @route   GET api/users/check-usernames
+// @desc    Check for users without usernames
+// @access  Private (should be restricted to admins in production)
+router.get('/check-usernames', auth, userController.checkUsersWithoutUsernames);
+
+// @route   POST api/users/generate-usernames
+// @desc    Generate usernames for users without them
+// @access  Private (should be restricted to admins in production)
+router.post('/generate-usernames', auth, userController.generateUsernamesForExistingUsers);
+
 module.exports = router;

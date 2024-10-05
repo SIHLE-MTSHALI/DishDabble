@@ -42,28 +42,21 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      let profileId = urlUsername;
-      if (!profileId && authUser) {
-        profileId = authUser._id;
-      }
-      console.log('Profile ID to fetch:', profileId);
+      let profileIdentifier = urlUsername || (authUser && authUser.username);
+      console.log('Profile identifier to fetch:', profileIdentifier);
       
-      if (profileId) {
-        console.log('Attempting to fetch profile data for ID:', profileId);
+      if (profileIdentifier) {
+        console.log('Attempting to fetch profile data for:', profileIdentifier);
         try {
-          await dispatch(getUserProfile(profileId));
+          await dispatch(getUserProfile(profileIdentifier));
           console.log('getUserProfile action dispatched successfully');
-          dispatch(getUserRecipes(profileId, 1));
         } catch (error) {
           console.error('Error dispatching getUserProfile:', error);
           setSnackbarMessage('Error fetching user profile');
           setSnackbarOpen(true);
         }
       } else {
-        console.log('No profile ID available to fetch profile data');
-        if (!urlUsername && !authUser) {
-          console.log('Both URL username and auth user are not available');
-        }
+        console.log('No profile identifier available to fetch profile data');
       }
     };
 
@@ -78,8 +71,9 @@ const ProfilePage = () => {
   useEffect(() => {
     if (userProfile) {
       setLocalUserProfile(userProfile);
+      dispatch(getUserRecipes(userProfile._id, 1));
     }
-  }, [userProfile]);
+  }, [userProfile, dispatch]);
 
   useEffect(() => {
     if (localUserProfile && (tabValue === 3 || tabValue === 4)) {

@@ -20,13 +20,31 @@ const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes,
 
   useEffect(() => {
     console.log('ExplorePage: Users state updated', users);
+    if (users && users.length > 0) {
+      users.forEach((user, index) => {
+        console.log(`User ${index}:`, {
+          id: user._id,
+          name: user.name,
+          username: user.username,
+          hasUsername: !!user.username
+        });
+      });
+    } else {
+      console.log('ExplorePage: No users data available');
+    }
   }, [users]);
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
 
-  console.log('ExplorePage: Rendering with state:', { recipes, users, tags, loading, error });
+  console.log('ExplorePage: Rendering with state:', { 
+    recipes: recipes.length, 
+    users: users.length, 
+    tags: tags.length, 
+    loading, 
+    error 
+  });
 
   return (
     <Box sx={{ padding: 3 }}>
@@ -56,7 +74,15 @@ const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes,
             <>
               <Typography>Number of users: {users.length}</Typography>
               {users.length > 0 ? (
-                <UserList users={users} />
+                <>
+                  <Typography>User data before passing to UserList:</Typography>
+                  {users.map((user, index) => (
+                    <Typography key={user._id}>
+                      User {index}: ID: {user._id}, Name: {user.name}, Username: {user.username || 'undefined'}
+                    </Typography>
+                  ))}
+                  <UserList users={users} />
+                </>
               ) : (
                 <Typography>No users found.</Typography>
               )}
@@ -78,7 +104,13 @@ const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes,
 };
 
 const mapStateToProps = state => {
-  console.log('ExplorePage: mapStateToProps', state);
+  console.log('ExplorePage: mapStateToProps', {
+    recipes: state.recipe.randomRecipes.length,
+    users: state.user.randomUsers.length,
+    tags: state.tag.randomTags.length,
+    loading: state.recipe.loading && state.user.loading && state.tag.loading,
+    error: state.recipe.error || state.user.error || state.tag.error
+  });
   return {
     recipes: state.recipe.randomRecipes,
     users: state.user.randomUsers,

@@ -26,7 +26,16 @@ const userReducer = (state = initialState, action) => {
 
   switch (type) {
     case GET_RANDOM_USERS:
-      console.log('userReducer: Handling GET_RANDOM_USERS', payload);
+      console.log('userReducer: Handling GET_RANDOM_USERS');
+      console.log('Payload length:', payload.length);
+      payload.forEach((user, index) => {
+        console.log(`User ${index}:`, {
+          id: user._id,
+          name: user.name,
+          username: user.username,
+          hasUsername: !!user.username
+        });
+      });
       return {
         ...state,
         randomUsers: payload,

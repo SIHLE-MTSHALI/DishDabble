@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Recipe = require('../models/Recipe');
 const notificationController = require('./notificationController');
 const mongoose = require('mongoose');
+const { faker } = require('@faker-js/faker');
 
 // @route   GET api/auth
 // @desc    Get authenticated user
@@ -144,6 +145,30 @@ exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select('-password');
     console.log(`Retrieved ${users.length} users`);
+
+    // Log each user's data
+    users.forEach((user, index) => {
+      console.log(`User ${index + 1}:`, {
+        id: user._id,
+        name: user.name,
+        username: user.username,
+        hasUsername: !!user.username
+      });
+    });
+
+    // Check if any user is missing a username
+    const usersWithoutUsername = users.filter(user => !user.username);
+    if (usersWithoutUsername.length > 0) {
+      console.warn(`Warning: ${usersWithoutUsername.length} users are missing a username`);
+      usersWithoutUsername.forEach((user, index) => {
+        console.warn(`User without username ${index + 1}:`, {
+          id: user._id,
+          name: user.name,
+          email: user.email
+        });
+      });
+    }
+
     res.json(users);
   } catch (err) {
     console.error('Error in getAllUsers:', err.message);
@@ -420,7 +445,28 @@ exports.getRandomUsers = async (req, res) => {
     ]);
 
     console.log(`getRandomUsers: Found ${randomUsers.length} random users`);
-    console.log('getRandomUsers: Sample user data:', randomUsers[0]);
+    
+    // Log each user's data
+    randomUsers.forEach((user, index) => {
+      console.log(`User ${index + 1}:`, {
+        id: user._id,
+        name: user.name,
+        username: user.username,
+        hasUsername: !!user.username
+      });
+    });
+
+    // Check if any user is missing a username
+    const usersWithoutUsername = randomUsers.filter(user => !user.username);
+    if (usersWithoutUsername.length > 0) {
+      console.warn(`Warning: ${usersWithoutUsername.length} users are missing a username`);
+      usersWithoutUsername.forEach((user, index) => {
+        console.warn(`User without username ${index + 1}:`, {
+          id: user._id,
+          name: user.name
+        });
+      });
+    }
 
     res.json(randomUsers);
   } catch (err) {
@@ -468,6 +514,77 @@ exports.getUserFollowing = async (req, res) => {
   } catch (err) {
     console.error('Error in getUserFollowing:', err.message);
     res.status(500).send('Server Error');
+  }
+};
+
+// @route   GET api/users/check-usernames
+// @desc    Check for users without usernames
+// @access  Private (should be restricted to admins in production)
+exports.checkUsersWithoutUsernames = async (req, res) => {
+  console.log('Checking for users without usernames');
+  try {
+    const usersWithoutUsername = await User.find({ username: { $in: [null, ''] } }).select('_id name email');
+    
+    console.log(`Found ${usersWithoutUsername.length} users without usernames`);
+    
+    if (usersWithoutUsername.length > 0) {
+      usersWithoutUsername.forEach((user, index) => {
+        console.log(`User ${index + 1} without username:`, {
+          id: user._id,
+          name: user.name,
+          email: user.email
+        });
+      });
+    }
+
+    res.json({
+      count: usersWithoutUsername.length,
+      users: usersWithoutUsername
+    });
+  } catch (err) {
+    console.error('Error in checkUsersWithoutUsernames:', err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+// @route   POST api/users/generate-usernames
+// @desc    Generate usernames for users without them
+// @access  Private (should be restricted to admins in production)
+exports.generateUsernamesForExistingUsers = async (req, res) => {
+  console.log('Generating usernames for users without them');
+  try {
+    const usersWithoutUsername = await User.find({ username: { $in: [null, ''] } });
+    console.log(`Found ${usersWithoutUsername.length} users without usernames`);
+
+    let updatedCount = 0;
+    for (let user of usersWithoutUsername) {
+      const firstName = user.name.split(' ')[0];
+      const lastName = user.name.split(' ').slice(1).join(' ');
+      let username = faker.internet.userName({ firstName, lastName }).toLowerCase();
+      
+      // Check if the generated username already exists
+      let usernameExists = await User.findOne({ username });
+      let attempts = 0;
+      while (usernameExists && attempts < 10) {
+        username = faker.internet.userName({ firstName, lastName }).toLowerCase();
+        usernameExists = await User.findOne({ username });
+        attempts++;
+      }
+
+      if (!usernameExists) {
+        user.username = username;
+        await user.save();
+        updatedCount++;
+      } else {
+        console.warn(`Could not generate a unique username for user ${user._id} after 10 attempts`);
+      }
+    }
+
+    console.log(`Generated usernames for ${updatedCount} users`);
+    res.json({ message: `Generated usernames for ${updatedCount} users` });
+  } catch (error) {
+    console.error('Error generating usernames for existing users:', error);
+    res.status(500).json({ error: 'Server error while generating usernames' });
   }
 };
 

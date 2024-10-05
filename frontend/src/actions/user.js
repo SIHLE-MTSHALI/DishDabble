@@ -70,9 +70,24 @@ export const updateFollowers = (followers) => ({
 // Get random users
 export const getRandomUsers = (limit = 10) => async (dispatch) => {
   console.log('getRandomUsers action: Fetching random users');
+  console.log('API URL:', `${API_URL}/api/users/random?limit=${limit}`);
   try {
     const res = await axios.get(`${API_URL}/api/users/random?limit=${limit}`);
     console.log('getRandomUsers action: Received data:', res.data);
+    
+    if (Array.isArray(res.data)) {
+      console.log('Number of users received:', res.data.length);
+      res.data.forEach((user, index) => {
+        console.log(`User ${index}:`, {
+          id: user._id,
+          name: user.name,
+          username: user.username,
+          hasUsername: !!user.username
+        });
+      });
+    } else {
+      console.log('Received data is not an array:', res.data);
+    }
 
     dispatch({
       type: GET_RANDOM_USERS,
@@ -81,6 +96,7 @@ export const getRandomUsers = (limit = 10) => async (dispatch) => {
     console.log('getRandomUsers action: Dispatched GET_RANDOM_USERS');
   } catch (err) {
     console.error('getRandomUsers action: Error:', err.response?.data || err.message);
+    console.error('Full error object:', err);
     dispatch({
       type: USER_ERROR,
       payload: { msg: err.response?.data?.msg || 'Error fetching random users', status: err.response?.status || 500 }
@@ -89,15 +105,15 @@ export const getRandomUsers = (limit = 10) => async (dispatch) => {
 };
 
 // Get user profile
-export const getUserProfile = (userId) => async (dispatch) => {
-  console.log(`Fetching user profile for user ID: ${userId}`);
+export const getUserProfile = (userIdentifier) => async (dispatch) => {
+  console.log(`Fetching user profile for: ${userIdentifier}`);
   try {
-    if (!userId) {
-      console.error('User ID is undefined or null');
-      throw new Error('User ID is required');
+    if (!userIdentifier) {
+      console.error('User identifier is undefined or null');
+      throw new Error('User identifier is required');
     }
 
-    const url = `${API_URL}/api/users/profile/${userId}`;
+    const url = `${API_URL}/api/users/profile/${userIdentifier}`;
     console.log('API URL:', url);
 
     const res = await axios.get(url);

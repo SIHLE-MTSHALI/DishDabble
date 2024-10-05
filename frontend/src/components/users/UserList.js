@@ -7,6 +7,15 @@ import { followUser, unfollowUser } from '../../actions/user';
 const UserList = ({ users, followUser, unfollowUser, currentUser }) => {
   useEffect(() => {
     console.log('UserList: Received users', users);
+    users.forEach((user, index) => {
+      console.log(`User ${index}:`, {
+        id: user._id,
+        name: user.name,
+        username: user.username,
+        usernameType: typeof user.username,
+        hasUsername: !!user.username
+      });
+    });
   }, [users]);
 
   const handleFollowToggle = (userId, isFollowing) => {
@@ -25,7 +34,13 @@ const UserList = ({ users, followUser, unfollowUser, currentUser }) => {
   return (
     <List>
       {users.map(user => {
-        console.log('UserList: Rendering user', user);
+        console.log('UserList: Rendering user', {
+          id: user._id,
+          name: user.name,
+          username: user.username,
+          usernameType: typeof user.username,
+          hasUsername: !!user.username
+        });
         return (
           <ListItem key={user._id} alignItems="flex-start">
             <ListItemAvatar>
@@ -35,7 +50,7 @@ const UserList = ({ users, followUser, unfollowUser, currentUser }) => {
               primary={
                 <Typography
                   component={Link}
-                  to={`/profile/${user.username}`}
+                  to={`/profile/${user.username || user._id}`}
                   color="inherit"
                   style={{ textDecoration: 'none' }}
                 >

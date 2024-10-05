@@ -75,9 +75,13 @@ const generateFakeUser = async () => {
   const salt = await bcrypt.genSalt(10);
   const password = await bcrypt.hash('password123', salt);
 
+  const firstName = faker.person.firstName();
+  const lastName = faker.person.lastName();
+
   return {
-    name: faker.person.fullName(),
-    email: faker.internet.email(),
+    name: `${firstName} ${lastName}`,
+    username: faker.internet.userName({ firstName, lastName }).toLowerCase(),
+    email: faker.internet.email({ firstName, lastName }),
     password: password,
     avatar: faker.image.avatar(),
     bio: faker.lorem.sentence(),
@@ -259,6 +263,9 @@ const populateDatabase = async (userCount = 50, recipeCount = 100) => {
     // Call the new function to ensure minimum followers, following, and recipes
     await ensureMinimumInteractions();
 
+    // Generate usernames for users without them
+    await generateUsernamesForExistingUsers();
+
   } catch (error) {
     console.error('Error populating database:', error);
   }
@@ -308,6 +315,25 @@ const ensureMinimumInteractions = async () => {
     console.log('Minimum interactions ensured for all users');
   } catch (error) {
     console.error('Error ensuring minimum interactions:', error);
+  }
+};
+
+// New function to generate usernames for existing users without usernames
+const generateUsernamesForExistingUsers = async () => {
+  try {
+    const usersWithoutUsername = await User.find({ username: { $in: [null, ''] } });
+    console.log(`Found ${usersWithoutUsername.length} users without usernames`);
+
+    for (let user of usersWithoutUsername) {
+      const firstName = user.name.split(' ')[0];
+      const lastName = user.name.split(' ').slice(1).join(' ');
+      user.username = faker.internet.userName({ firstName, lastName }).toLowerCase();
+      await user.save();
+    }
+
+    console.log('Usernames generated for all users without usernames');
+  } catch (error) {
+    console.error('Error generating usernames for existing users:', error);
   }
 };
 
