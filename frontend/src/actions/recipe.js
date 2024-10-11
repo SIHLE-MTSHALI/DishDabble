@@ -24,6 +24,52 @@ import { emitLikeRecipe, emitCommentRecipe } from '../utils/socket';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
+// Add new recipe
+export const addRecipe = formData => async dispatch => {
+  try {
+    console.log('addRecipe: Adding new recipe');
+    console.log(`addRecipe: API URL - ${API_URL}/api/recipes`);
+    console.log('addRecipe: Form data being sent:', Object.fromEntries(formData));
+
+    const res = await axios.post(`${API_URL}/api/recipes`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    console.log('addRecipe: API response:', res.data);
+
+    dispatch({
+      type: ADD_RECIPE,
+      payload: res.data
+    });
+
+    dispatch(setAlert('Recipe Created', 'success'));
+    console.log('addRecipe: New recipe dispatched to store');
+  } catch (err) {
+    console.error('addRecipe: Error adding new recipe:', err);
+    console.error('addRecipe: Error response:', err.response);
+    console.error('addRecipe: Error data:', err.response?.data);
+    console.error('addRecipe: Error status:', err.response?.status);
+    console.error('addRecipe: Error headers:', err.response?.headers);
+
+    let errorMessage = 'Error creating recipe';
+    if (err.response?.data?.errors) {
+      errorMessage += ': ' + err.response.data.errors.map(e => e.msg).join(', ');
+    } else if (err.response?.data?.msg) {
+      errorMessage += ': ' + err.response.data.msg;
+    }
+
+    dispatch({
+      type: RECIPE_ERROR,
+      payload: { 
+        msg: err.response?.statusText || 'Server Error', 
+        status: err.response?.status || 500 
+      }
+    });
+    dispatch(setAlert(errorMessage, 'error'));
+  }
+};
+
 // Get all recipes with pagination
 export const getRecipes = (page = 1, limit = 10) => async dispatch => {
   try {
@@ -84,40 +130,6 @@ export const getRecipe = id => async dispatch => {
       }
     });
     dispatch(setAlert('Error fetching recipe', 'error'));
-  }
-};
-
-// Add new recipe
-export const addRecipe = formData => async dispatch => {
-  try {
-    console.log('addRecipe: Adding new recipe');
-    console.log(`addRecipe: API URL - ${API_URL}/api/recipes`);
-
-    const res = await axios.post(`${API_URL}/api/recipes`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
-    console.log('addRecipe: API response:', res.data);
-
-    dispatch({
-      type: ADD_RECIPE,
-      payload: res.data
-    });
-
-    dispatch(setAlert('Recipe Created', 'success'));
-    console.log('addRecipe: New recipe dispatched to store');
-  } catch (err) {
-    console.error('addRecipe: Error adding new recipe:', err);
-    console.error('addRecipe: Error details:', err.response);
-    dispatch({
-      type: RECIPE_ERROR,
-      payload: { 
-        msg: err.response?.statusText || 'Server Error', 
-        status: err.response?.status || 500 
-      }
-    });
-    dispatch(setAlert('Error creating recipe', 'error'));
   }
 };
 
@@ -551,4 +563,3 @@ export const getRandomRecipes = (page = 1, limit = 10) => async dispatch => {
     dispatch(setAlert('Error fetching random recipes', 'error'));
   }
 };
-

@@ -64,9 +64,9 @@ const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes,
         Explore
       </Typography>
       <Tabs value={activeTab} onChange={handleTabChange} aria-label="explore tabs">
-        <Tab label="Random Recipes" />
-        <Tab label="Random Users" />
-        <Tab label="Random Tags" />
+        <Tab label="Recipes" />
+        <Tab label="Users" />
+        <Tab label="Tags" />
       </Tabs>
       <Box sx={{ marginTop: 2 }}>
         {activeTab === 0 && (

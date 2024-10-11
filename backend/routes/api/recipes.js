@@ -76,8 +76,30 @@ router.post(
     [
       check('title', 'Title is required').not().isEmpty(),
       check('description', 'Description is required').not().isEmpty(),
-      check('ingredients', 'At least one ingredient is required').isArray({ min: 1 }),
-      check('instructions', 'At least one instruction is required').isArray({ min: 1 }),
+      check('ingredients', 'At least one ingredient is required').custom((value) => {
+        if (Array.isArray(value) && value.length > 0) return true;
+        if (typeof value === 'string') {
+          try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) && parsed.length > 0;
+          } catch (e) {
+            return false;
+          }
+        }
+        return false;
+      }),
+      check('instructions', 'At least one instruction is required').custom((value) => {
+        if (Array.isArray(value) && value.length > 0) return true;
+        if (typeof value === 'string') {
+          try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) && parsed.length > 0;
+          } catch (e) {
+            return false;
+          }
+        }
+        return false;
+      }),
       check('prepTime', 'Preparation time is required').isNumeric(),
       check('cookTime', 'Cooking time is required').isNumeric(),
       check('difficulty', 'Difficulty level is required').isIn(['Easy', 'Medium', 'Hard']),

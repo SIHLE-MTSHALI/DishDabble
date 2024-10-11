@@ -49,3 +49,25 @@ export const shimmer = keyframes`
     background-position: 1000px 0;
   }
 `;
+
+export const slideInFromLeft = keyframes`
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+`;
+
+export const slideInFromRight = keyframes`
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+`;

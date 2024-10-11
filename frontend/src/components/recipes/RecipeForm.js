@@ -147,11 +147,44 @@ const RecipeForm = () => {
     setImagePreviews(newPreviews);
   };
 
+  const populateTestRecipe = () => {
+    setFormData({
+      title: 'Test Spaghetti Carbonara',
+      description: 'A classic Italian pasta dish with a creamy egg-based sauce.',
+      ingredients: [
+        { name: 'Spaghetti', quantity: '400', unit: 'g' },
+        { name: 'Pancetta', quantity: '150', unit: 'g' },
+        { name: 'Eggs', quantity: '4', unit: 'large' },
+        { name: 'Parmesan cheese', quantity: '50', unit: 'g' },
+        { name: 'Black pepper', quantity: '1', unit: 'tsp' },
+      ],
+      instructions: [
+        'Bring a large pot of salted water to boil and cook spaghetti according to package instructions.',
+        'While pasta is cooking, fry pancetta in a large skillet until crispy.',
+        'In a bowl, whisk together eggs, grated Parmesan, and black pepper.',
+        'Drain pasta, reserving 1/2 cup of pasta water.',
+        'Add pasta to the skillet with pancetta, remove from heat.',
+        'Quickly stir in egg mixture, thinning with pasta water if needed.',
+        'Serve immediately with extra Parmesan and black pepper.',
+      ],
+      prepTime: '10',
+      cookTime: '15',
+      difficulty: 'Medium',
+      servings: '4',
+      tags: ['Italian', 'Pasta', 'Quick'],
+      images: [],
+      rating: 4
+    });
+  };
+
   return (
     <Container maxWidth="md">
       <Typography variant="h4" component="h1" gutterBottom>
         {id ? 'Edit Recipe' : 'Add New Recipe'}
       </Typography>
+      <Button onClick={populateTestRecipe} variant="outlined" color="secondary" sx={{ mb: 2 }}>
+        Populate Test Recipe
+      </Button>
       <Box component="form" onSubmit={onSubmit}>
         <TextField
           fullWidth

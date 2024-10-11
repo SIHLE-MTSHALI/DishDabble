@@ -4,6 +4,7 @@ const User = require('../models/User');
 const fs = require('fs');
 const path = require('path');
 const notificationController = require('./notificationController');
+const mongoose = require('mongoose');
 
 // Helper function to delete image file
 const deleteImage = (filename) => {
@@ -15,8 +16,11 @@ const deleteImage = (filename) => {
 
 exports.createRecipe = async (req, res) => {
   console.log('createRecipe: Received request');
+  console.log('createRecipe: Request headers:', JSON.stringify(req.headers, null, 2));
   console.log('createRecipe: Request body:', JSON.stringify(req.body, null, 2));
   console.log('createRecipe: Request files:', req.files);
+  console.log('createRecipe: User ID:', req.user.id);
+  console.log('createRecipe: MongoDB connection state:', mongoose.connection.readyState);
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -25,28 +29,47 @@ exports.createRecipe = async (req, res) => {
   }
 
   try {
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error('MongoDB connection is not established');
+    }
+
     const { title, description, ingredients, instructions, prepTime, cookTime, difficulty, servings, tags } = req.body;
 
-    console.log('createRecipe: Parsed ingredients:', ingredients);
-    console.log('createRecipe: Parsed instructions:', instructions);
-    console.log('createRecipe: Parsed tags:', tags);
+    console.log('createRecipe: Received title:', title);
+    console.log('createRecipe: Received description:', description);
+    console.log('createRecipe: Received ingredients (type):', typeof ingredients);
+    console.log('createRecipe: Received ingredients (value):', ingredients);
+    console.log('createRecipe: Received instructions (type):', typeof instructions);
+    console.log('createRecipe: Received instructions (value):', instructions);
+    console.log('createRecipe: Received prepTime:', prepTime);
+    console.log('createRecipe: Received cookTime:', cookTime);
+    console.log('createRecipe: Received difficulty:', difficulty);
+    console.log('createRecipe: Received servings:', servings);
+    console.log('createRecipe: Received tags (type):', typeof tags);
+    console.log('createRecipe: Received tags (value):', tags);
 
     let parsedIngredients, parsedInstructions, parsedTags;
 
     try {
-      parsedIngredients = JSON.parse(ingredients);
-      parsedInstructions = JSON.parse(instructions);
-      parsedTags = JSON.parse(tags);
+      parsedIngredients = Array.isArray(ingredients) ? ingredients : JSON.parse(ingredients);
+      parsedInstructions = Array.isArray(instructions) ? instructions : JSON.parse(instructions);
+      parsedTags = Array.isArray(tags) ? tags : (tags ? JSON.parse(tags) : []);
     } catch (parseError) {
       console.error('createRecipe: Error parsing JSON:', parseError);
-      return res.status(400).json({ msg: 'Invalid JSON format for ingredients, instructions, or tags' });
+      return res.status(400).json({ msg: 'Invalid format for ingredients, instructions, or tags', error: parseError.message });
     }
 
+    console.log('createRecipe: Parsed ingredients:', JSON.stringify(parsedIngredients, null, 2));
+    console.log('createRecipe: Parsed instructions:', JSON.stringify(parsedInstructions, null, 2));
+    console.log('createRecipe: Parsed tags:', JSON.stringify(parsedTags, null, 2));
+
     if (!Array.isArray(parsedIngredients) || parsedIngredients.length === 0) {
+      console.log('createRecipe: Invalid ingredients array');
       return res.status(400).json({ msg: 'At least one ingredient is required' });
     }
 
     if (!Array.isArray(parsedInstructions) || parsedInstructions.length === 0) {
+      console.log('createRecipe: Invalid instructions array');
       return res.status(400).json({ msg: 'At least one instruction is required' });
     }
 
@@ -68,13 +91,24 @@ exports.createRecipe = async (req, res) => {
     // Handle image uploads
     if (req.files && req.files.length > 0) {
       newRecipe.images = req.files.map(file => file.filename);
+      console.log('createRecipe: Uploaded images:', newRecipe.images);
     }
 
     const recipe = await newRecipe.save();
     console.log('createRecipe: Recipe saved successfully:', JSON.stringify(recipe, null, 2));
     res.json(recipe);
   } catch (err) {
-    console.error('createRecipe: Error:', err.message);
+    console.error('createRecipe: Error:', err);
+    console.error('createRecipe: Error message:', err.message);
+    console.error('createRecipe: Error stack:', err.stack);
+    if (err.name === 'ValidationError') {
+      const validationErrors = Object.values(err.errors).map(error => error.message);
+      console.log('createRecipe: Mongoose validation errors:', validationErrors);
+      return res.status(400).json({ msg: 'Validation Error', errors: validationErrors });
+    }
+    if (err.message === 'MongoDB connection is not established') {
+      return res.status(500).json({ msg: 'Database connection error', error: err.message });
+    }
     res.status(500).json({ msg: 'Server Error', error: err.message });
   }
 };
