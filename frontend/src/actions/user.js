@@ -67,17 +67,17 @@ export const updateFollowers = (followers) => ({
   payload: followers
 });
 
-// Get random users
-export const getRandomUsers = (limit = 10) => async (dispatch) => {
-  console.log('getRandomUsers action: Fetching random users');
-  console.log('API URL:', `${API_URL}/api/users/random?limit=${limit}`);
+// Get random users with pagination
+export const getRandomUsers = (page = 1, limit = 10) => async (dispatch) => {
+  console.log(`getRandomUsers action: Fetching random users (page ${page}, limit ${limit})`);
+  console.log('API URL:', `${API_URL}/api/users/random?page=${page}&limit=${limit}`);
   try {
-    const res = await axios.get(`${API_URL}/api/users/random?limit=${limit}`);
+    const res = await axios.get(`${API_URL}/api/users/random?page=${page}&limit=${limit}`);
     console.log('getRandomUsers action: Received data:', res.data);
     
-    if (Array.isArray(res.data)) {
-      console.log('Number of users received:', res.data.length);
-      res.data.forEach((user, index) => {
+    if (Array.isArray(res.data.users)) {
+      console.log('Number of users received:', res.data.users.length);
+      res.data.users.forEach((user, index) => {
         console.log(`User ${index}:`, {
           id: user._id,
           name: user.name,
@@ -91,7 +91,11 @@ export const getRandomUsers = (limit = 10) => async (dispatch) => {
 
     dispatch({
       type: GET_RANDOM_USERS,
-      payload: res.data
+      payload: {
+        users: res.data.users,
+        hasMore: res.data.hasMore,
+        page: page
+      }
     });
     console.log('getRandomUsers action: Dispatched GET_RANDOM_USERS');
   } catch (err) {

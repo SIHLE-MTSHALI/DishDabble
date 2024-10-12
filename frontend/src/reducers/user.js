@@ -16,7 +16,9 @@ const initialState = {
   followers: [],
   following: [],
   loading: true,
-  error: null
+  error: null,
+  hasMore: true,
+  page: 1
 };
 
 const userReducer = (state = initialState, action) => {
@@ -27,18 +29,12 @@ const userReducer = (state = initialState, action) => {
   switch (type) {
     case GET_RANDOM_USERS:
       console.log('userReducer: Handling GET_RANDOM_USERS');
-      console.log('Payload length:', payload.length);
-      payload.forEach((user, index) => {
-        console.log(`User ${index}:`, {
-          id: user._id,
-          name: user.name,
-          username: user.username,
-          hasUsername: !!user.username
-        });
-      });
+      console.log('Payload:', payload);
       return {
         ...state,
-        randomUsers: payload,
+        randomUsers: payload.page === 1 ? payload.users : [...state.randomUsers, ...payload.users],
+        hasMore: payload.hasMore,
+        page: payload.page,
         loading: false,
         error: null
       };

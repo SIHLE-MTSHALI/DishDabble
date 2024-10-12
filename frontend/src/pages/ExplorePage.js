@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { Box, Tabs, Tab, Typography } from '@mui/material';
+import InfiniteScroll from 'react-infinite-scroll-component';
 import { getRandomRecipes } from '../actions/recipe';
 import { getRandomUsers } from '../actions/user';
 import { getRandomTags } from '../actions/tag';
@@ -10,52 +11,60 @@ import TagList from '../components/tags/TagList';
 
 const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes, users, tags, loading, error, hasMore }) => {
   const [activeTab, setActiveTab] = useState(0);
-  const [page, setPage] = useState(1);
+  const [recipePage, setRecipePage] = useState(1);
+  const [userPage, setUserPage] = useState(1);
+  const [tagPage, setTagPage] = useState(1);
 
   useEffect(() => {
     console.log('ExplorePage: Fetching initial random data');
     getRandomRecipes(1);
-    getRandomUsers();
-    getRandomTags();
+    getRandomUsers(1);
+    getRandomTags(1);
   }, [getRandomRecipes, getRandomUsers, getRandomTags]);
 
-  useEffect(() => {
-    console.log('ExplorePage: Users state updated', users);
-    if (users && users.length > 0) {
-      users.forEach((user, index) => {
-        console.log(`User ${index}:`, {
-          id: user._id,
-          name: user.name,
-          username: user.username,
-          hasUsername: !!user.username
-        });
-      });
-    } else {
-      console.log('ExplorePage: No users data available');
-    }
-  }, [users]);
-
   const handleTabChange = (event, newValue) => {
+    console.log('ExplorePage: Tab changed to', newValue);
     setActiveTab(newValue);
   };
 
   const loadMoreRecipes = useCallback(() => {
-    if (hasMore && !loading.recipe) {
+    if (hasMore.recipe && !loading.recipe) {
       console.log('ExplorePage: Loading more random recipes');
-      const nextPage = page + 1;
+      const nextPage = recipePage + 1;
       getRandomRecipes(nextPage);
-      setPage(nextPage);
+      setRecipePage(nextPage);
     }
-  }, [hasMore, loading.recipe, page, getRandomRecipes]);
+  }, [hasMore.recipe, loading.recipe, recipePage, getRandomRecipes]);
+
+  const loadMoreUsers = useCallback(() => {
+    if (hasMore.user && !loading.user) {
+      console.log('ExplorePage: Loading more random users');
+      const nextPage = userPage + 1;
+      getRandomUsers(nextPage);
+      setUserPage(nextPage);
+    }
+  }, [hasMore.user, loading.user, userPage, getRandomUsers]);
+
+  const loadMoreTags = useCallback(() => {
+    if (hasMore.tag && !loading.tag) {
+      console.log('ExplorePage: Loading more random tags');
+      const nextPage = tagPage + 1;
+      getRandomTags(nextPage);
+      setTagPage(nextPage);
+    }
+  }, [hasMore.tag, loading.tag, tagPage, getRandomTags]);
 
   console.log('ExplorePage: Rendering with state:', { 
-    recipes: recipes.length, 
-    users: users.length, 
-    tags: tags.length, 
+    recipes: recipes?.length, 
+    users: users?.length, 
+    tags: tags?.length, 
     loading, 
     error,
     hasMore,
-    page
+    recipePage,
+    userPage,
+    tagPage,
+    activeTab
   });
 
   return (
@@ -70,48 +79,51 @@ const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes,
       </Tabs>
       <Box sx={{ marginTop: 2 }}>
         {activeTab === 0 && (
-          <RecipeList 
-            recipes={recipes} 
-            loading={loading.recipe} 
-            error={error.recipe}
-            title="Random Recipes"
-            hasMore={hasMore}
-            onLoadMore={loadMoreRecipes}
-            currentPage={page}
-          />
+          <InfiniteScroll
+            dataLength={recipes?.length || 0}
+            next={loadMoreRecipes}
+            hasMore={hasMore.recipe}
+            loader={<Typography>Loading more recipes...</Typography>}
+          >
+            <RecipeList 
+              recipes={recipes || []} 
+              loading={loading.recipe} 
+              error={error.recipe}
+              title="Explore Recipes"
+            />
+          </InfiniteScroll>
         )}
         {activeTab === 1 && (
-          loading.user ? (
-            <Typography>Loading users...</Typography>
-          ) : error.user ? (
-            <Typography color="error">Error loading users: {error.user.msg}</Typography>
-          ) : (
-            <>
-              <Typography>Number of users: {users.length}</Typography>
-              {users.length > 0 ? (
-                <>
-                  <Typography>User data before passing to UserList:</Typography>
-                  {users.map((user, index) => (
-                    <Typography key={user._id}>
-                      User {index}: ID: {user._id}, Name: {user.name}, Username: {user.username || 'undefined'}
-                    </Typography>
-                  ))}
-                  <UserList users={users} />
-                </>
-              ) : (
-                <Typography>No users found.</Typography>
-              )}
-            </>
-          )
+          <InfiniteScroll
+            dataLength={users?.length || 0}
+            next={loadMoreUsers}
+            hasMore={hasMore.user}
+            loader={<Typography>Loading more users...</Typography>}
+          >
+            {loading.user && (!users || users.length === 0) ? (
+              <Typography>Loading users...</Typography>
+            ) : error.user ? (
+              <Typography color="error">Error loading users: {error.user.msg}</Typography>
+            ) : (
+              <UserList users={users || []} />
+            )}
+          </InfiniteScroll>
         )}
         {activeTab === 2 && (
-          loading.tag ? (
-            <Typography>Loading tags...</Typography>
-          ) : error.tag ? (
-            <Typography color="error">Error loading tags: {error.tag.msg}</Typography>
-          ) : (
-            <TagList tags={tags} />
-          )
+          <InfiniteScroll
+            dataLength={tags?.length || 0}
+            next={loadMoreTags}
+            hasMore={hasMore.tag}
+            loader={<Typography>Loading more tags...</Typography>}
+          >
+            {loading.tag && (!tags || tags.length === 0) ? (
+              <Typography>Loading tags...</Typography>
+            ) : error.tag ? (
+              <Typography color="error">Error loading tags: {error.tag.msg}</Typography>
+            ) : (
+              <TagList tags={tags || []} />
+            )}
+          </InfiniteScroll>
         )}
       </Box>
     </Box>
@@ -119,14 +131,7 @@ const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes,
 };
 
 const mapStateToProps = state => {
-  console.log('ExplorePage: mapStateToProps', {
-    recipes: state.recipe.randomRecipes.length,
-    users: state.user.randomUsers.length,
-    tags: state.tag.randomTags.length,
-    loading: state.recipe.loading && state.user.loading && state.tag.loading,
-    error: state.recipe.error || state.user.error || state.tag.error,
-    hasMore: state.recipe.hasMore
-  });
+  console.log('ExplorePage: mapStateToProps', state);
   return {
     recipes: state.recipe.randomRecipes,
     users: state.user.randomUsers,
@@ -141,7 +146,11 @@ const mapStateToProps = state => {
       user: state.user.error,
       tag: state.tag.error
     },
-    hasMore: state.recipe.hasMore
+    hasMore: {
+      recipe: state.recipe.hasMore,
+      user: state.user.hasMore,
+      tag: state.tag.hasMore
+    }
   };
 };
 
