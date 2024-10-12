@@ -220,52 +220,61 @@ const generateFakeInteractions = async (users, recipes, maxNewUsers = 200) => {
   return newUsersCreated;
 };
 
-
 // Function to ensure all recipes have ratings, comments, and likes
 const ensureAllRecipesHaveInteractions = async (users) => {
   try {
-    const recipes = await Recipe.find();
-    console.log(`Ensuring interactions for ${recipes.length} recipes`);
+    const totalRecipes = await Recipe.countDocuments();
+    console.log(`Ensuring interactions for ${totalRecipes} recipes`);
 
-    for (let recipe of recipes) {
-      let modified = false;
+    const batchSize = 1000;
+    let processedRecipes = 0;
 
-      // Ensure ratings
-      if (!recipe.ratings || recipe.ratings.length < 6) {
-        const ratingCount = faker.number.int({min: 6, max: 123});
-        recipe.ratings = Array(ratingCount).fill().map(() => ({
-          user: faker.helpers.arrayElement(users)._id,
-          value: faker.number.int({min: 1, max: 5})
-        }));
-        modified = true;
+    while (processedRecipes < totalRecipes) {
+      const recipes = await Recipe.find().skip(processedRecipes).limit(batchSize);
+
+      for (let recipe of recipes) {
+        let modified = false;
+
+        // Ensure ratings
+        if (!recipe.ratings || recipe.ratings.length < 6) {
+          const ratingCount = faker.number.int({min: 6, max: 123});
+          recipe.ratings = Array(ratingCount).fill().map(() => ({
+            user: faker.helpers.arrayElement(users)._id,
+            value: faker.number.int({min: 1, max: 5})
+          }));
+          modified = true;
+        }
+
+        // Ensure comments
+        if (!recipe.comments || recipe.comments.length === 0) {
+          const commentCount = faker.number.int({min: 1, max: 10});
+          recipe.comments = Array(commentCount).fill().map(() => {
+            const commenter = faker.helpers.arrayElement(users);
+            return {
+              user: commenter._id,
+              text: faker.lorem.sentence(),
+              name: commenter.name,
+              avatar: commenter.avatar,
+              date: faker.date.past()
+            };
+          });
+          modified = true;
+        }
+
+        // Ensure likes
+        if (!recipe.likes || recipe.likes.length === 0) {
+          const likeCount = faker.number.int({min: 1, max: Math.min(users.length, 50)});
+          recipe.likes = faker.helpers.arrayElements(users, likeCount).map(user => user._id);
+          modified = true;
+        }
+
+        if (modified) {
+          await recipe.save();
+        }
       }
 
-      // Ensure comments
-      if (!recipe.comments || recipe.comments.length === 0) {
-        const commentCount = faker.number.int({min: 1, max: 10});
-        recipe.comments = Array(commentCount).fill().map(() => {
-          const commenter = faker.helpers.arrayElement(users);
-          return {
-            user: commenter._id,
-            text: faker.lorem.sentence(),
-            name: commenter.name,
-            avatar: commenter.avatar,
-            date: faker.date.past()
-          };
-        });
-        modified = true;
-      }
-
-      // Ensure likes
-      if (!recipe.likes || recipe.likes.length === 0) {
-        const likeCount = faker.number.int({min: 1, max: Math.min(users.length, 50)});
-        recipe.likes = faker.helpers.arrayElements(users, likeCount).map(user => user._id);
-        modified = true;
-      }
-
-      if (modified) {
-        await recipe.save();
-      }
+      processedRecipes += recipes.length;
+      console.log(`Processed ${processedRecipes} out of ${totalRecipes} recipes`);
     }
 
     console.log('All recipes now have ratings, comments, and likes');
