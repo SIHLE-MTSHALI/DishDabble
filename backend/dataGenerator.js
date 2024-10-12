@@ -204,6 +204,16 @@ const generateFakeInteractions = async (users, recipes, maxNewUsers = 200) => {
       };
     });
 
+    // Generate random ratings
+    const ratingCount = faker.number.int({min: 6, max: 123});
+    recipe.ratings = Array(ratingCount).fill().map(() => {
+      const rater = faker.helpers.arrayElement(allUsers);
+      return {
+        user: rater._id,
+        value: faker.number.int({min: 1, max: 5})
+      };
+    });
+
     await recipe.save();
   }
 
@@ -211,7 +221,7 @@ const generateFakeInteractions = async (users, recipes, maxNewUsers = 200) => {
 };
 
 // Function to populate the database with users and recipes
-const populateDatabase = async (userCount = 250, recipeCount = 1000) => {
+const populateDatabase = async (userCount = 800, recipeCount = 1000) => {
   try {
     // Generate user data
     const userPromises = Array.from({ length: userCount }, async () => {
