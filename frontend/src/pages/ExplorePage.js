@@ -90,6 +90,9 @@ const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes,
               loading={loading.recipe} 
               error={error.recipe}
               title="Explore Recipes"
+              hasMore={hasMore.recipe}
+              onLoadMore={loadMoreRecipes}
+              currentPage={recipePage}
             />
           </InfiniteScroll>
         )}
@@ -105,7 +108,12 @@ const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes,
             ) : error.user ? (
               <Typography color="error">Error loading users: {error.user.msg}</Typography>
             ) : (
-              <UserList users={users || []} />
+              <UserList 
+                users={users || []} 
+                hasMore={hasMore.user}
+                onLoadMore={loadMoreUsers}
+                currentPage={userPage}
+              />
             )}
           </InfiniteScroll>
         )}
@@ -121,7 +129,12 @@ const ExplorePage = ({ getRandomRecipes, getRandomUsers, getRandomTags, recipes,
             ) : error.tag ? (
               <Typography color="error">Error loading tags: {error.tag.msg}</Typography>
             ) : (
-              <TagList tags={tags || []} />
+              <TagList 
+                tags={tags || []} 
+                hasMore={hasMore.tag}
+                onLoadMore={loadMoreTags}
+                currentPage={tagPage}
+              />
             )}
           </InfiniteScroll>
         )}

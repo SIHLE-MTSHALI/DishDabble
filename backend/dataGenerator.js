@@ -173,7 +173,7 @@ const generateUniqueRecipe = () => {
 };
 
 // Function to generate fake user interactions
-const generateFakeInteractions = async (users, recipes, maxNewUsers = 20) => {
+const generateFakeInteractions = async (users, recipes, maxNewUsers = 200) => {
   let allUsers = [...users];
   let newUsersCreated = 0;
 
@@ -187,12 +187,12 @@ const generateFakeInteractions = async (users, recipes, maxNewUsers = 20) => {
     }
 
     // Generate random likes
-    const likeCount = faker.number.int({min: 0, max: Math.min(allUsers.length, 50)});
+    const likeCount = faker.number.int({min: 0, max: Math.min(allUsers.length, 500)});
     const likers = faker.helpers.arrayElements(allUsers, likeCount);
     recipe.likes = likers.map(user => user._id);
 
     // Generate random comments
-    const commentCount = faker.number.int({min: 0, max: 10});
+    const commentCount = faker.number.int({min: 0, max: 35});
     recipe.comments = Array(commentCount).fill().map(() => {
       const commenter = faker.helpers.arrayElement(allUsers);
       return {
@@ -211,7 +211,7 @@ const generateFakeInteractions = async (users, recipes, maxNewUsers = 20) => {
 };
 
 // Function to populate the database with users and recipes
-const populateDatabase = async (userCount = 50, recipeCount = 100) => {
+const populateDatabase = async (userCount = 250, recipeCount = 1000) => {
   try {
     // Generate user data
     const userPromises = Array.from({ length: userCount }, async () => {
@@ -275,9 +275,9 @@ const populateDatabase = async (userCount = 50, recipeCount = 100) => {
 const ensureMinimumInteractions = async () => {
   try {
     const users = await User.find();
-    const minFollowers = 15;
-    const minFollowing = 15;
-    const minRecipes = 12;
+    const minFollowers = 33;
+    const minFollowing = 23;
+    const minRecipes = 30;
 
     for (let user of users) {
       // Ensure minimum followers

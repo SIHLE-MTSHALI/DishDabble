@@ -75,25 +75,11 @@ export const getRandomUsers = (page = 1, limit = 10) => async (dispatch) => {
     const res = await axios.get(`${API_URL}/api/users/random?page=${page}&limit=${limit}`);
     console.log('getRandomUsers action: Received data:', res.data);
     
-    if (Array.isArray(res.data.users)) {
-      console.log('Number of users received:', res.data.users.length);
-      res.data.users.forEach((user, index) => {
-        console.log(`User ${index}:`, {
-          id: user._id,
-          name: user.name,
-          username: user.username,
-          hasUsername: !!user.username
-        });
-      });
-    } else {
-      console.log('Received data is not an array:', res.data);
-    }
-
     dispatch({
       type: GET_RANDOM_USERS,
       payload: {
-        users: res.data.users,
-        hasMore: res.data.hasMore,
+        users: res.data,
+        hasMore: res.data.length === limit,
         page: page
       }
     });

@@ -14,23 +14,11 @@ export const getRandomTags = (page = 1, limit = 10) => async (dispatch) => {
     const res = await axios.get(`${API_URL}/api/tags/random?page=${page}&limit=${limit}`);
     console.log('getRandomTags action: Received data:', res.data);
     
-    if (Array.isArray(res.data.tags)) {
-      console.log('Number of tags received:', res.data.tags.length);
-      res.data.tags.forEach((tag, index) => {
-        console.log(`Tag ${index}:`, {
-          id: tag._id,
-          name: tag.name
-        });
-      });
-    } else {
-      console.log('Received data is not an array:', res.data);
-    }
-
     dispatch({
       type: GET_RANDOM_TAGS,
       payload: {
-        tags: res.data.tags,
-        hasMore: res.data.hasMore,
+        tags: res.data,
+        hasMore: res.data.length === limit,
         page: page
       }
     });
