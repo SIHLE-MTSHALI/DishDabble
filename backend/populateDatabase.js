@@ -20,7 +20,7 @@ const runPopulation = async () => {
   await connectDB();
   
   try {
-    await populateDatabase(800, 1000); // Generate 800 users and 1000 recipes
+    await populateDatabase(500, 700); // Generate 500 users and 700 recipes
     console.log('Database population completed successfully');
   } catch (error) {
     console.error('Error populating database:', error);

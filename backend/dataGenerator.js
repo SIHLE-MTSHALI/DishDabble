@@ -187,7 +187,7 @@ const generateFakeInteractions = async (users, recipes, maxNewUsers = 200) => {
     }
 
     // Generate random likes
-    const likeCount = faker.number.int({min: 0, max: Math.min(allUsers.length, 500)});
+    const likeCount = faker.number.int({min: 1, max: Math.min(allUsers.length, 500)});
     const likers = faker.helpers.arrayElements(allUsers, likeCount);
     recipe.likes = likers.map(user => user._id);
 
@@ -220,8 +220,62 @@ const generateFakeInteractions = async (users, recipes, maxNewUsers = 200) => {
   return newUsersCreated;
 };
 
+
+// Function to ensure all recipes have ratings, comments, and likes
+const ensureAllRecipesHaveInteractions = async (users) => {
+  try {
+    const recipes = await Recipe.find();
+    console.log(`Ensuring interactions for ${recipes.length} recipes`);
+
+    for (let recipe of recipes) {
+      let modified = false;
+
+      // Ensure ratings
+      if (!recipe.ratings || recipe.ratings.length < 6) {
+        const ratingCount = faker.number.int({min: 6, max: 123});
+        recipe.ratings = Array(ratingCount).fill().map(() => ({
+          user: faker.helpers.arrayElement(users)._id,
+          value: faker.number.int({min: 1, max: 5})
+        }));
+        modified = true;
+      }
+
+      // Ensure comments
+      if (!recipe.comments || recipe.comments.length === 0) {
+        const commentCount = faker.number.int({min: 1, max: 10});
+        recipe.comments = Array(commentCount).fill().map(() => {
+          const commenter = faker.helpers.arrayElement(users);
+          return {
+            user: commenter._id,
+            text: faker.lorem.sentence(),
+            name: commenter.name,
+            avatar: commenter.avatar,
+            date: faker.date.past()
+          };
+        });
+        modified = true;
+      }
+
+      // Ensure likes
+      if (!recipe.likes || recipe.likes.length === 0) {
+        const likeCount = faker.number.int({min: 1, max: Math.min(users.length, 50)});
+        recipe.likes = faker.helpers.arrayElements(users, likeCount).map(user => user._id);
+        modified = true;
+      }
+
+      if (modified) {
+        await recipe.save();
+      }
+    }
+
+    console.log('All recipes now have ratings, comments, and likes');
+  } catch (error) {
+    console.error('Error ensuring interactions for all recipes:', error);
+  }
+};
+
 // Function to populate the database with users and recipes
-const populateDatabase = async (userCount = 800, recipeCount = 1000) => {
+const populateDatabase = async (userCount = 850, recipeCount = 10500) => {
   try {
     // Generate user data
     const userPromises = Array.from({ length: userCount }, async () => {
@@ -267,8 +321,11 @@ const populateDatabase = async (userCount = 800, recipeCount = 1000) => {
     const newUsersFromInteractions = await generateFakeInteractions(users, recipes);
     console.log(`Fake interactions generated with ${newUsersFromInteractions} additional users created`);
 
+    // Ensure all recipes have ratings, comments, and likes
+    await ensureAllRecipesHaveInteractions(users);
+
     console.log(`Total users in the database: ${users.length + newUsersFromInteractions}`);
-    console.log('Database population completed successfully');
+    console.log('Database population completed successfully'); 
 
     // Call the new function to ensure minimum followers, following, and recipes
     await ensureMinimumInteractions();
@@ -287,7 +344,7 @@ const ensureMinimumInteractions = async () => {
     const users = await User.find();
     const minFollowers = 33;
     const minFollowing = 23;
-    const minRecipes = 30;
+    const minRecipes = 5;
 
     for (let user of users) {
       // Ensure minimum followers
