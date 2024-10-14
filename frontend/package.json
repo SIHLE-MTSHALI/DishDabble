@@ -29,7 +29,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "create-env": "echo REACT_APP_API_URL=http://localhost:5000\nREACT_APP_SOCKET_URL=http://localhost:5000 > .env"
   },
   "eslintConfig": {
     "extends": [
