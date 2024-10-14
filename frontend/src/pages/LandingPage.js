@@ -409,7 +409,7 @@ const LandingPage = () => {
 
       <Box sx={{ my: 8, textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
-          © 2023 DishDabble. All rights reserved. | <Link component={RouterLink} to="/privacy-policy">Privacy Policy</Link> | <Link component={RouterLink} to="/terms-of-service">Terms of Service</Link>
+          © 2024 DishDabble. All rights reserved. | <Link component={RouterLink} to="/privacy-policy">Privacy Policy</Link> | <Link component={RouterLink} to="/terms-of-service">Terms of Service</Link>
         </Typography>
       </Box>
     </Container>

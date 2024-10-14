@@ -28,6 +28,12 @@ import RecipeForm from './components/recipes/RecipeForm';
 import ProfilePage from './pages/ProfilePage';
 import PrivateRoute from './components/routing/PrivateRoute';
 
+// New Pages
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
+import TermsOfServicePage from './pages/TermsOfServicePage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+
 if (localStorage.token) {
   setAuthToken(localStorage.token);
 }
@@ -99,6 +105,11 @@ function App() {
               </Route>
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
+              {/* New Routes */}
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/terms" element={<TermsOfServicePage />} />
+              <Route path="/privacy" element={<PrivacyPolicyPage />} />
             </Routes>
           </main>
           <Footer />

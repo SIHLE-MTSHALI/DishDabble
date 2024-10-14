@@ -1,5 +1,6 @@
 import React from 'react';
-import { Typography, Container, Box, Link } from '@mui/material';
+import { Typography, Container, Box, Link, Grid } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -16,7 +17,29 @@ const Footer = () => {
         >
           Discover, share, and create delicious recipes with our community
         </Typography>
-        <Typography variant="body2" color="text.secondary" align="center">
+        <Grid container justifyContent="center" spacing={2} sx={{ mt: 3 }}>
+          <Grid item>
+            <Link component={RouterLink} to="/about" color="inherit">
+              About
+            </Link>
+          </Grid>
+          <Grid item>
+            <Link component={RouterLink} to="/contact" color="inherit">
+              Contact
+            </Link>
+          </Grid>
+          <Grid item>
+            <Link component={RouterLink} to="/terms" color="inherit">
+              Terms of Service
+            </Link>
+          </Grid>
+          <Grid item>
+            <Link component={RouterLink} to="/privacy" color="inherit">
+              Privacy Policy
+            </Link>
+          </Grid>
+        </Grid>
+        <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 3 }}>
           {'Copyright © '}
           <Link color="inherit" href="https://dishdabble.com/">
             DishDabble
