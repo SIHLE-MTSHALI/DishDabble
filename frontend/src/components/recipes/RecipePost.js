@@ -38,7 +38,8 @@ const RecipePost = ({ recipe }) => {
 
   useEffect(() => {
     if (recipe && recipe.ratings && auth.user) {
-      setUserRating(recipe.ratings.find(rating => rating.user === auth.user._id)?.value || 0);
+      const userRatingObj = recipe.ratings.find(rating => rating.user === auth.user._id);
+      setUserRating(userRatingObj ? userRatingObj.value : 0);
     }
   }, [recipe, auth.user]);
 
@@ -51,6 +52,14 @@ const RecipePost = ({ recipe }) => {
     console.error('Recipe user is undefined in RecipePost', recipe);
     return <Alert severity="error">Error: Recipe user data is missing</Alert>;
   }
+
+  const calculateAverageRating = () => {
+    if (!recipe.ratings || recipe.ratings.length === 0) return 0;
+    const sum = recipe.ratings.reduce((acc, rating) => acc + rating.value, 0);
+    return sum / recipe.ratings.length;
+  };
+
+  const averageRating = calculateAverageRating();
 
   const handleLike = () => {
     try {
@@ -168,18 +177,33 @@ const RecipePost = ({ recipe }) => {
             </Typography>
           </Box>
         </Box>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Rating
-            name="recipe-rating"
-            value={userRating}
-            precision={0.5}
-            onChange={handleRating}
-          />
-          <Typography variant="body2">
+        <Box display="flex" flexDirection="column" mb={2}>
+          <Box display="flex" alignItems="center" mb={1}>
+            <Typography variant="body2" mr={1}>Average Rating:</Typography>
+            <Rating
+              name="average-rating"
+              value={averageRating}
+              precision={0.1}
+              readOnly
+            />
+            <Typography variant="body2" ml={1}>
+              ({averageRating.toFixed(1)})
+            </Typography>
+          </Box>
+          <Box display="flex" alignItems="center">
+            <Typography variant="body2" mr={1}>Your Rating:</Typography>
+            <Rating
+              name="user-rating"
+              value={userRating}
+              precision={0.5}
+              onChange={handleRating}
+            />
+          </Box>
+          <Typography variant="body2" mt={1}>
             ({recipe.ratings.length} {recipe.ratings.length === 1 ? 'rating' : 'ratings'})
           </Typography>
-          <Chip label={recipe.difficulty} color="primary" variant="outlined" />
         </Box>
+        <Chip label={recipe.difficulty} color="primary" variant="outlined" sx={{ mb: 2 }} />
         <Box mb={2}>
           {recipe.tags && recipe.tags.map((tag, index) => (
             <Chip key={index} label={tag} size="small" sx={{ mr: 0.5, mb: 0.5 }} />

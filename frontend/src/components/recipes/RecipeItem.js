@@ -7,6 +7,8 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import StarHalfIcon from '@mui/icons-material/StarHalf';
 import { likeRecipe, unlikeRecipe, saveRecipe, unsaveRecipe } from '../../actions/recipe';
 import { emitLikeRecipe } from '../../utils/socket';
 import { fadeIn, slideInFromBottom } from '../../styles/animations';
@@ -69,6 +71,24 @@ const RecipeItem = ({ recipe }) => {
     setLastTap(now);
   };
 
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    for (let i = 1; i <= 5; i++) {
+      if (i <= fullStars) {
+        stars.push(<StarIcon key={i} color="primary" />);
+      } else if (i === fullStars + 1 && hasHalfStar) {
+        stars.push(<StarHalfIcon key={i} color="primary" />);
+      } else {
+        stars.push(<StarBorderIcon key={i} color="primary" />);
+      }
+    }
+
+    return stars;
+  };
+
   return (
     <Card sx={{ animation: `${fadeIn} 1s ease-out` }}>
       <CardMedia
@@ -95,7 +115,7 @@ const RecipeItem = ({ recipe }) => {
           </Typography>
         </Box>
         <Box display="flex" alignItems="center" mb={1}>
-          <StarIcon color="primary" />
+          {renderStars(recipe.averageRating)}
           <Typography variant="body2" ml={0.5}>
             {recipe.averageRating ? recipe.averageRating.toFixed(1) : 'N/A'} ({recipe.ratings ? recipe.ratings.length : 0} ratings)
           </Typography>
