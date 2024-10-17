@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { register } from '../../actions/auth';
 import { setAlert } from '../../actions/alert';
 import { TextField, Button, Typography, Container, Box } from '@mui/material';
@@ -15,6 +16,7 @@ const Register = () => {
 
   const { name, username, email, password, password2 } = formData;
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -28,6 +30,7 @@ const Register = () => {
       try {
         await dispatch(register({ name, username, email, password }));
         console.log('Registration successful');
+        navigate('/'); // Redirect to home page after successful registration
       } catch (error) {
         console.error('Registration failed:', error);
         dispatch(setAlert('Registration failed', 'error'));
