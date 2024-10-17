@@ -193,7 +193,7 @@ User authentication is handled using JWT (JSON Web Tokens). The `auth.js` middle
 
 As with any project, there's always room for improvement. Here are some areas we're considering for future updates:
 
-1. Implement a rating system for recipes
+1. Implement a rating system for recipes-Done.
 2. Add a meal planning feature for weekly recipe organization
 3. Integrate with external APIs for nutritional information and ingredient substitutions
 4. Implement a recommendation system based on user preferences and browsing history
@@ -203,18 +203,6 @@ As with any project, there's always room for improvement. Here are some areas we
 8. Add a feature for users to create and share cooking videos
 9. Implement a recipe scaling feature to adjust ingredient quantities
 10. Add support for multiple languages to reach a broader audience
-
-## Contributing
-
-We welcome contributions to DishDabble! If you have ideas for improvements or new features, please feel free to submit a pull request or open an issue on our GitHub repository. Here's how you can contribute:
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-Please ensure your code adheres to our coding standards and includes appropriate tests.
 
 ## Closing Thoughts
 
