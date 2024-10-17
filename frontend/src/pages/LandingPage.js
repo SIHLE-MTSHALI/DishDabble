@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   Container,
   Typography,
@@ -32,20 +33,45 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import StarIcon from '@mui/icons-material/Star';
 import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+
+// Import local images
+import recipe1Image from '../assets/images/recipe1.jpg';
+import recipe2Image from '../assets/images/recipe2.jpg';
+import recipe3Image from '../assets/images/recipe3.jpg';
+import quickEasyImage from '../assets/images/quick_easy.jpg';
+import vegetarianImage from '../assets/images/vegetarian.jpg';
+import dessertsImage from '../assets/images/desserts.jpg';
+import healthyImage from '../assets/images/healthy.jpg';
+import internationalImage from '../assets/images/international.jpg';
+import specialOccasionsImage from '../assets/images/special_occasions.jpg';
+import mobileAppImage from '../assets/images/mobile_app.jpg';
+import kitchenToolsImage from '../assets/images/kitchen_tools.jpg';
+import cookingClassImage from '../assets/images/cooking_class.jpg';
+import seasonalIngredientsImage from '../assets/images/seasonal_ingredients.jpg';
+import mealPlanningImage from '../assets/images/meal_planning.jpg';
+import communityEventsImage from '../assets/images/community_events.jpg';
+import culinaryTipsImage from '../assets/images/culinary_tips.jpg';
 
 const LandingPage = () => {
+  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+
+  if (isAuthenticated) {
+    return <Navigate to="/home" />;
+  }
+
   const userPosts = [
-    { id: 1, username: 'foodie123', image: 'https://source.unsplash.com/random/400x300?food', caption: 'Delicious homemade pasta!', likes: 156, comments: 23 },
-    { id: 2, username: 'chefmaster', image: 'https://source.unsplash.com/random/400x300?dessert', caption: 'Perfect chocolate soufflé', likes: 203, comments: 31 },
-    { id: 3, username: 'healthyeats', image: 'https://source.unsplash.com/random/400x300?salad', caption: 'Fresh summer salad', likes: 178, comments: 19 },
+    { id: 1, username: 'foodie123', image: recipe1Image, caption: 'Delicious homemade pasta!', likes: 156, comments: 23 },
+    { id: 2, username: 'chefmaster', image: recipe2Image, caption: 'Perfect chocolate soufflé', likes: 203, comments: 31 },
+    { id: 3, username: 'healthyeats', image: recipe3Image, caption: 'Fresh summer salad', likes: 178, comments: 19 },
   ];
 
   const recipeImages = [
-    { image: 'https://source.unsplash.com/random/800x600?recipe', title: 'Gourmet Burger', difficulty: 'Medium', time: '30 mins' },
-    { image: 'https://source.unsplash.com/random/800x600?cooking', title: 'Vegetarian Stir Fry', difficulty: 'Easy', time: '20 mins' },
-    { image: 'https://source.unsplash.com/random/800x600?baking', title: 'Chocolate Lava Cake', difficulty: 'Hard', time: '45 mins' },
+    { image: recipe1Image, title: 'Gourmet Burger', difficulty: 'Medium', time: '30 mins' },
+    { image: recipe2Image, title: 'Vegetarian Stir Fry', difficulty: 'Easy', time: '20 mins' },
+    { image: recipe3Image, title: 'Chocolate Lava Cake', difficulty: 'Hard', time: '45 mins' },
+    { image: quickEasyImage, title: 'Quick & Easy Salad', difficulty: 'Easy', time: '15 mins' },
+    { image: vegetarianImage, title: 'Vegetarian Delight', difficulty: 'Medium', time: '25 mins' },
+    { image: dessertsImage, title: 'Decadent Dessert', difficulty: 'Hard', time: '50 mins' },
   ];
 
   const features = [
@@ -58,12 +84,12 @@ const LandingPage = () => {
   ];
 
   const recipeCategories = [
-    { title: 'Quick & Easy', image: 'https://source.unsplash.com/random/300x200?quickmeal' },
-    { title: 'Vegetarian Delights', image: 'https://source.unsplash.com/random/300x200?vegetarian' },
-    { title: 'Decadent Desserts', image: 'https://source.unsplash.com/random/300x200?dessert' },
-    { title: 'Healthy Options', image: 'https://source.unsplash.com/random/300x200?healthyfood' },
-    { title: 'International Cuisine', image: 'https://source.unsplash.com/random/300x200?worldfood' },
-    { title: 'Special Occasions', image: 'https://source.unsplash.com/random/300x200?feastfood' },
+    { title: 'Quick & Easy', image: quickEasyImage },
+    { title: 'Vegetarian Delights', image: vegetarianImage },
+    { title: 'Decadent Desserts', image: dessertsImage },
+    { title: 'Healthy Options', image: healthyImage },
+    { title: 'International Cuisine', image: internationalImage },
+    { title: 'Special Occasions', image: specialOccasionsImage },
   ];
 
   const faqItems = [
@@ -243,7 +269,7 @@ const LandingPage = () => {
         {faqItems.map((item, index) => (
           <Accordion key={index} sx={{ mb: 2, borderRadius: 2, '&:before': { display: 'none' } }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ bgcolor: 'primary.light' }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{item.question}</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>{item.question}</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <Typography variant="body1">{item.answer}</Typography>
@@ -254,7 +280,7 @@ const LandingPage = () => {
 
       <Box sx={{ my: 8, animation: `${slideInFromLeft} 1s ease-out` }}>
         <Typography variant="h3" gutterBottom align="center" sx={{ fontWeight: 'bold', color: 'secondary.main', mb: 4 }}>
-          DishDabble on the Go
+          DishDabble Mobile App - Coming Soon!
         </Typography>
         <Grid container spacing={4} alignItems="center">
           <Grid item xs={12} md={6}>
@@ -264,7 +290,7 @@ const LandingPage = () => {
                 <Typography variant="h5" sx={{ fontWeight: 'bold' }}>Mobile App</Typography>
               </Box>
               <Typography variant="body1" paragraph>
-                Take DishDabble with you wherever you go! Our mobile app allows you to:
+                We're excited to announce that the DishDabble mobile app is coming soon! Stay tuned for these amazing features:
               </Typography>
               <List>
                 {['Access recipes offline', 'Use voice commands for hands-free cooking', 'Scan ingredients to find matching recipes', 'Get personalized recipe recommendations'].map((feature, index) => (
@@ -277,14 +303,14 @@ const LandingPage = () => {
                 ))}
               </List>
               <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                <Button variant="contained" color="primary" sx={{ mr: 2 }}>Download for iOS</Button>
-                <Button variant="contained" color="secondary">Download for Android</Button>
+                <Button variant="contained" color="primary" sx={{ mr: 2 }} disabled>Coming Soon to iOS</Button>
+                <Button variant="contained" color="secondary" disabled>Coming Soon to Android</Button>
               </Box>
             </Card>
           </Grid>
           <Grid item xs={12} md={6}>
             <Box sx={{ position: 'relative', height: 0, paddingBottom: '177.78%' /* 16:9 aspect ratio */ }}>
-              <img src="https://source.unsplash.com/random/600x800?smartphone" alt="DishDabble Mobile App" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }} />
+              <img src={mobileAppImage} alt="DishDabble Mobile App" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }} />
             </Box>
           </Grid>
         </Grid>
@@ -292,104 +318,36 @@ const LandingPage = () => {
 
       <Box sx={{ my: 8, animation: `${fadeIn} 1s ease-out` }}>
         <Typography variant="h3" gutterBottom align="center" sx={{ fontWeight: 'bold', color: 'secondary.main', mb: 4 }}>
-          What Our Users Say
+          Explore DishDabble
         </Typography>
         <Grid container spacing={4}>
           {[
-            { name: 'Sarah M.', role: 'Home Cook', text: "DishDabble has transformed the way I cook. I've found so many amazing recipes and made great friends!" },
-            { name: 'Chef Alex', role: 'Professional Chef', text: "As a professional chef, I love sharing my recipes and getting inspiration from the community. DishDabble is a game-changer for culinary professionals." },
-            { name: 'Mike T.', role: 'Food Blogger', text: "The variety of recipes on DishDabble is incredible. I've tried dishes from all over the world and it's greatly expanded my culinary horizons." },
-            { name: 'Emily R.', role: 'Nutrition Student', text: "I appreciate how DishDabble includes nutritional information for recipes. It's been invaluable for my studies and personal meal planning." },
-          ].map((testimonial, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 4, boxShadow: 3, p: 3, transition: 'transform 0.3s', '&:hover': { transform: 'translateY(-10px)' } }}>
-                <CardContent>
-                  <Typography variant="body1" paragraph sx={{ fontStyle: 'italic', mb: 2 }}>
-                    "{testimonial.text}"
-                  </Typography>
-                </CardContent>
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                    {testimonial.name}
+            { title: 'Kitchen Essentials', image: kitchenToolsImage, description: 'Discover the must-have tools for your kitchen' },
+            { title: 'Cooking Classes', image: cookingClassImage, description: 'Join virtual cooking classes with expert chefs' },
+            { title: 'Seasonal Ingredients', image: seasonalIngredientsImage, description: 'Learn about seasonal ingredients and how to use them' },
+            { title: 'Meal Planning', image: mealPlanningImage, description: 'Simplify your week with our meal planning feature' },
+            { title: 'Community Events', image: communityEventsImage, description: 'Participate in exciting culinary events and challenges' },
+            { title: 'Culinary Tips', image: culinaryTipsImage, description: 'Master cooking techniques with our expert tips' },
+          ].map((item, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', borderRadius: 4, overflow: 'hidden', boxShadow: 3 }}>
+                <CardMedia
+                  component="img"
+                  height="200"
+                  image={item.image}
+                  alt={item.title}
+                />
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography gutterBottom variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
+                    {item.title}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {testimonial.role}
+                    {item.description}
                   </Typography>
-                </Box>
+                </CardContent>
               </Card>
             </Grid>
           ))}
-        </Grid>
-      </Box>
-
-      <Box sx={{ my: 8, animation: `${slideInFromRight} 1s ease-out` }}>
-        <Typography variant="h3" gutterBottom align="center" sx={{ fontWeight: 'bold', color: 'secondary.main', mb: 4 }}>
-          Awards and Recognition
-        </Typography>
-        <Grid container spacing={4} justifyContent="center">
-          {[
-            { title: 'Best Food App 2023', org: 'Tech Food Awards' },
-            { title: 'Community Choice', org: 'Foodie Network' },
-            { title: 'Innovation in Culinary Tech', org: 'Digital Gastronomy Summit' },
-          ].map((award, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <Card sx={{ textAlign: 'center', p: 3, borderRadius: 4, boxShadow: 3 }}>
-                <EmojiEventsIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>{award.title}</Typography>
-                <Typography variant="subtitle1" color="text.secondary">{award.org}</Typography>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-
-      <Box sx={{ my: 8, animation: `${fadeIn} 1s ease-out` }}>
-        <Typography variant="h3" gutterBottom align="center" sx={{ fontWeight: 'bold', color: 'secondary.main', mb: 4 }}>
-          Food Safety and Nutrition
-        </Typography>
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
-            <Card sx={{ height: '100%', borderRadius: 4, boxShadow: 3, p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <VerifiedUserIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
-                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>Food Safety First</Typography>
-              </Box>
-              <Typography variant="body1" paragraph>
-                At DishDabble, we prioritize food safety. Our recipes include important safety tips and proper handling instructions to ensure a safe cooking experience.
-              </Typography>
-              <List>
-                {['Proper cooking temperatures', 'Food storage guidelines', 'Cross-contamination prevention', 'Allergen information'].map((item, index) => (
-                  <ListItem key={index}>
-                    <ListItemIcon>
-                      <StarIcon color="primary" />
-                    </ListItemIcon>
-                    <ListItemText primary={item} />
-                  </ListItem>
-                ))}
-              </List>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Card sx={{ height: '100%', borderRadius: 4, boxShadow: 3, p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <RestaurantIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
-                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>Nutritional Insights</Typography>
-              </Box>
-              <Typography variant="body1" paragraph>
-                Make informed choices with our detailed nutritional information. Each recipe includes:
-              </Typography>
-              <List>
-                {['Calorie count', 'Macronutrient breakdown', 'Vitamin and mineral content', 'Dietary tags (e.g., low-carb, high-protein)'].map((item, index) => (
-                  <ListItem key={index}>
-                    <ListItemIcon>
-                      <StarIcon color="primary" />
-                    </ListItemIcon>
-                    <ListItemText primary={item} />
-                  </ListItem>
-                ))}
-              </List>
-            </Card>
-          </Grid>
         </Grid>
       </Box>
 

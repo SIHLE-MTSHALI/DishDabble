@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useDispatch, useSelector } from 'react-redux';
@@ -37,6 +37,12 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 if (localStorage.token) {
   setAuthToken(localStorage.token);
 }
+
+// New component to handle redirection
+const RedirectComponent = () => {
+  const auth = useSelector(state => state.auth);
+  return auth.isAuthenticated ? <Navigate to="/home" /> : <LandingPage />;
+};
 
 function App() {
   const dispatch = useDispatch();
@@ -90,7 +96,7 @@ function App() {
           <main className="main-content">
             <Alert />
             <Routes>
-              <Route path="/" element={<LandingPage />} />
+              <Route path="/" element={<RedirectComponent />} />
               <Route element={<PrivateRoute />}>
                 <Route path="/home" element={<HomePage />} />
                 <Route path="/explore" element={<ExplorePage />} />
